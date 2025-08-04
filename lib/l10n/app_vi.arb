@@ -1,0 +1,14 @@
+{
+  "@@locale": "vi",
+  "hello": "Xin chào",
+  "welcome": "Chào mừng đến với Plantify!",
+  "login": "Đăng nhập",
+  "register": "Đăng ký",
+  "home": "Trang chủ",
+  "diagnose": "Chuẩn đoán",
+  "identify": "Nhận diện",
+  "profile": "Hồ sơ",
+  "searchplants": "Tìm cây",
+  "love": "Thích",
+  "comment": "Bình luận"
+}

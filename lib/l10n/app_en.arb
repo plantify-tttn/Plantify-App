@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "hello": "Hello",
+  "welcome": "Welcome to Plantify!",
+  "login": "Login",
+  "register": "Register",
+  "home": "Home",
+  "diagnose": "Diagnose",
+  "identify": "Identify",
+  "profile": "Profile",
+  "searchplants": "Search Plants",
+  "love": "Love",
+  "comment": "Comment"
+}
