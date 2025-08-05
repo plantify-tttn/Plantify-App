@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:plantify/models/post_model.dart';
 import 'package:plantify/theme/color.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PostMain extends StatelessWidget {
-  const PostMain({super.key});
+  final PostModel post;
+  const PostMain({super.key, required this.post});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +15,7 @@ class PostMain extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           child: Text(
-            'Cây tui trồng nè',
+            post.content,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500
@@ -26,7 +28,7 @@ class PostMain extends StatelessWidget {
           decoration: BoxDecoration(
             image: DecorationImage(
               image: NetworkImage(
-                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAC98T2mZJABaQis8ncs--sEMb17f5j6EzMA&s'
+                post.imageUrl
               ),
               fit: BoxFit.cover
             )
@@ -36,12 +38,12 @@ class PostMain extends StatelessWidget {
           children: [
             statusButton(
               Icon(Icons.favorite, color: Colors.red), 
-              123, 
+              post.loveCount, 
               AppLocalizations.of(context)!.love
             ),
             statusButton(
               Icon(Icons.chat_bubble, color: const Color.fromARGB(255, 159, 217, 173)), 
-              123, 
+              post.commentCount, 
               AppLocalizations.of(context)!.comment
             ),
           ],

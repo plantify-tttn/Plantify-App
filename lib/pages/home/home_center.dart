@@ -30,7 +30,6 @@ class _HomeCenterState extends State<HomeCenter> {
   void refreshMiniPlayer() {
     setState(() {});
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

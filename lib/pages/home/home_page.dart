@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plantify/pages/home/home_header.dart';
-import 'package:plantify/pages/posts/post_layout.dart';
+import 'package:plantify/pages/posts/post_list.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -12,10 +12,8 @@ class HomePage extends StatelessWidget {
         children: [
           const SizedBox(height: 42,),
           HomeHeader(),
-          const SizedBox( height: 20,),
-          PostLayout(),
-          PostLayout(),
-          PostLayout(),
+          const SizedBox( height: 0,),
+          PostList(),
         ],
       ),
     );

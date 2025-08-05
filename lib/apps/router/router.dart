@@ -4,9 +4,11 @@ import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/pages/home/home_center.dart';
 import 'package:plantify/pages/login/login_page.dart';
 import 'package:plantify/pages/register/register_page.dart';
+import 'package:plantify/pages/search/search_page.dart';
 import 'package:plantify/pages/welcome/welcome_page.dart';
 import 'package:plantify/viewmodel/login_vm.dart';
 import 'package:plantify/viewmodel/register_vm.dart';
+import 'package:plantify/viewmodel/search_vm.dart';
 import 'package:provider/provider.dart';
 
 class RouterCustom {
@@ -17,7 +19,7 @@ class RouterCustom {
         path: '/',
         name: RouterName.welcome,
         builder: (BuildContext context, GoRouterState state) {
-          return HomeCenter();
+          return WelcomePage();
         },
       ),
       GoRoute(
@@ -54,13 +56,23 @@ class RouterCustom {
       //     return const VerificationPage();
       //   },
       // ),
-      // GoRoute(
-      //   path: '/home',
-      //   name: RouterName.home,
-      //   builder: (BuildContext context, GoRouterState state) {
-      //     return const HomePage();
-      //   },
-      // ),
+      GoRoute(
+        path: '/home',
+        name: RouterName.home,
+        builder: (BuildContext context, GoRouterState state) {
+          return HomeCenter();
+        },
+      ),
+      GoRoute(
+        path: '/search',
+        name: RouterName.search,
+        builder: (BuildContext context, GoRouterState state) {
+          return ChangeNotifierProvider(
+            create: (_)=> SearchVm(),
+            child: SearchPage(),
+          );
+        },
+      ),
       // GoRoute(
       //   path: '/my_ticket',
       //   name: RouterName.my_ticket,
