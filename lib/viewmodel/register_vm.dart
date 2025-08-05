@@ -4,6 +4,9 @@ import 'package:plantify/services/auth_services/register_service.dart';
 class RegisterVm extends ChangeNotifier {
   final RegisterService _registerService = RegisterService();
   bool _canRegister = false;
+  bool _isRegister = false;
+
+  bool get isRegister => _isRegister;
   // Controllers
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -128,6 +131,8 @@ class RegisterVm extends ChangeNotifier {
           backgroundColor: Colors.green,
         ),
       );
+      _isRegister = true;
+      notifyListeners();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -135,6 +140,8 @@ class RegisterVm extends ChangeNotifier {
           backgroundColor: Colors.red,
         ),
       );
+      _isRegister = false;
+      notifyListeners();
     }
   }
 }

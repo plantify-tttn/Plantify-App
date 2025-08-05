@@ -24,31 +24,44 @@ class SearchVm extends ChangeNotifier{
     isLoading = true;
     notifyListeners();
 
-    try {
-      final items = await PlantsService().getPlants();
-      _allItems = items;
+    if(PlantsService().getPlantsFromHive().isNotEmpty){
+      _allItems = PlantsService().getPlantsFromHive();
       _filteredItems = [];
       error = null;
-    } catch (e) {
-      error = 'Không thể tải danh sách cây';
+    } else{
+        try {
+        final items = await PlantsService().getPlants();
+        _allItems = items;
+        PlantsService().savePlantsToHive(_allItems);
+        _filteredItems = [];
+        error = null;
+      } catch (e) {
+        error = 'Không thể tải danh sách cây';
+      }
     }
-
     isLoading = false;
     notifyListeners();
   }
 
   // Hàm tìm kiếm
-  void search(String query) {
+  void search(String query, BuildContext context) {
+    final locale = Localizations.localeOf(context); // ✅ Lấy locale hiện tại
+
     if (query.isEmpty) {
       _filteredItems = [];
     } else {
-      _filteredItems = _allItems
-          .where((item) =>
-              item.name.toLowerCase().contains(query.trim().toLowerCase()))
-          .toList();
+      _filteredItems = _allItems.where((item) {
+        final nameToCheck = locale.languageCode == 'vi'
+            ? item.name
+            : item.nameEn;
+
+        return nameToCheck.toLowerCase().contains(query.trim().toLowerCase());
+      }).toList();
     }
+
     notifyListeners(); // Cập nhật UI
   }
+
 
   // Gọi khi dispose màn hình
   void disposeController() {

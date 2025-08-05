@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:plantify/models/user_model.dart';
 
@@ -13,7 +14,9 @@ class UserService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return UserModel.fromJson(data['user']);
+      final user = UserModel.fromJson(data['user']);
+      hiveSaveUserById(user);
+      return user;
     } else {
       throw Exception('Lỗi khi lấy người dùng: ${response.statusCode}');
     }
@@ -55,5 +58,40 @@ class UserService {
     if (response.statusCode != 200) {
       throw Exception('Xoá thất bại');
     }
+  }
+
+  static const String _boxName = 'userBox';
+  static const String _userKey = 'currentUser';
+
+  // ✅ Lưu user
+  static Future<void> hiveSaveUser(UserModel user) async {
+    final box = Hive.box<UserModel>(_boxName);
+    await box.put(_userKey, user);
+  }
+  static Future<void> hiveSaveUserById(UserModel user) async {
+    final box = Hive.box<UserModel>('userBox');
+    await box.put(user.id, user); // key là user.id
+  }
+
+  // ✅ Lấy user
+  static UserModel? hiveGetUser() {
+    final box = Hive.box<UserModel>(_boxName);
+    return box.get(_userKey);
+  }
+  static UserModel? hiveGetUserById(String userId) {
+    final box = Hive.box<UserModel>('userBox');
+    return box.get(userId); // lấy theo key userId
+  }
+
+  // ✅ Xoá user khi logout
+  static Future<void> hiveDeleteUser() async {
+    final box = Hive.box<UserModel>(_boxName);
+    await box.delete(_userKey);
+  }
+
+  // ✅ Kiểm tra đã login chưa
+  static bool isLoggedIn() {
+    final box = Hive.box<UserModel>(_boxName);
+    return box.containsKey(_userKey);
   }
 }

@@ -15,6 +15,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Consumer<LoginVm>(
       builder: (context, loginVm, child) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -35,7 +36,7 @@ class LoginPage extends StatelessWidget {
               shadowColor: Colors.transparent,
               leading: IconButton(
                 onPressed: () {
-                  //TODO: home
+                  context.goNamed(RouterName.home);
                 }, 
                 icon: Icon(Icons.arrow_back_outlined)
               ),
@@ -129,8 +130,13 @@ class LoginPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       GestureDetector(
-                        onTap: () {
-                          loginVm.login(context);
+                        onTap: () async {
+                          if (loginVm.canLogin == false){
+                            return;
+                          }
+                          await loginVm.login(context);
+                          if (!context.mounted) return;
+                          if(loginVm.isLogin) context.goNamed(RouterName.home);
                         },
                         child: Container(
                           width: 160,
@@ -154,7 +160,11 @@ class LoginPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       GoogleSignin(),
                       const SizedBox(height: 70),
-                      SvgPicture.asset('assets/icons/logo_welcome.svg'),
+                      SvgPicture.asset(
+                        isDark 
+                          ? 'assets/icons/logo_welcome_dark.svg'
+                          : 'assets/icons/logo_welcome.svg'
+                      ),
                     ],
                   ),
                 ),

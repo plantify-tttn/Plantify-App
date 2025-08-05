@@ -3,9 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/pages/search/result_search.dart';
 import 'package:plantify/pages/search/trending_plant.dart';
+import 'package:plantify/services/plants_service.dart';
 import 'package:plantify/viewmodel/search_vm.dart';
 import 'package:plantify/widgets/textfield/search_field.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -57,13 +59,27 @@ class _SearchPageState extends State<SearchPage> {
                       child: SearchField(
                         controller: searchVm.searchController,
                         focusNode: _focusNode, // Truyền vào ô tìm kiếm
-                        onChanged: searchVm.search,
+                        onChanged: (value) {
+                          searchVm.search(value, context);
+                        }
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                ResultSearch(listItems: searchVm.filteredItems),
+                ResultSearch(listItems: searchVm.filteredItems, searchController: searchVm.searchController,),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      AppLocalizations.of(context)!.trendingPlants,
+                      style: TextStyle(
+                        fontSize: 20
+                      ),
+                    ),
+                  ),
+                ),
                 TrendingPlant(listItems: searchVm.allItems,)
               ],
             ),

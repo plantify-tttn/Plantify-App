@@ -1,7 +1,19 @@
-class UserModel {
+import 'package:hive/hive.dart';
+
+part 'user_model.g.dart';
+
+@HiveType(typeId: 1) // 🔢 mỗi model 1 typeId khác nhau
+class UserModel extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
+
+  @HiveField(2)
   final String imageUrl;
+
+  @HiveField(3)
   final String email;
 
   UserModel({
@@ -13,17 +25,20 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'].toString(),           // ✅ ép về String để tránh lỗi nếu backend trả int
-      name: json['name'] ?? 'No name',     // ✅ thêm fallback tránh null
-      imageUrl: json['imageUrl'] ?? '',    // ✅ tránh null
+      id: json['id'].toString(),
+      name: json['name'] ?? 'No name',
+      imageUrl: json['imageUrl'] ??
+          'https://cdn-icons-png.flaticon.com/512/8792/8792047.png',
       email: json['email'] ?? '',
     );
   }
-  Map<String, dynamic> toJson(){
+
+  Map<String, dynamic> toJson() {
     return {
+      "id": id,
       "name": name,
       "imageUrl": imageUrl,
-      "email": email
+      "email": email,
     };
   }
 }

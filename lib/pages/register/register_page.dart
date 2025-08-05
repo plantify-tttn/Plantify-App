@@ -15,6 +15,7 @@ class RegisterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Consumer<RegisterVm>(
       builder: (context, registerVm, child){
         return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -155,7 +156,7 @@ class RegisterPage extends StatelessWidget {
                             }
                             await registerVm.register(context);
                             if (!context.mounted) return;
-                            context.goNamed(RouterName.login);
+                            if(registerVm.isRegister) context.goNamed(RouterName.login);
                           },
                           child: Container(
                             width: 160,
@@ -179,7 +180,11 @@ class RegisterPage extends StatelessWidget {
                         const SizedBox(height: 10),
                         GoogleSignin(),
                         const SizedBox(height: 25),
-                        SvgPicture.asset('assets/icons/logo_welcome.svg'),
+                        SvgPicture.asset(
+                          isDark 
+                            ? 'assets/icons/logo_welcome_dark.svg'
+                            : 'assets/icons/logo_welcome.svg'
+                        ),
                       ],
                     ),
                   ),

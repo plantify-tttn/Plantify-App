@@ -25,10 +25,15 @@ class _WelcomePageState extends State<WelcomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Center(
-        child: SvgPicture.asset('assets/icons/logo_welcome.svg'),
+        child: SvgPicture.asset(
+          isDark 
+          ? 'assets/icons/logo_welcome_dark.svg'
+          : 'assets/icons/logo_welcome.svg'
+        ),
       ),
     );
   }

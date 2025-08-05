@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:plantify/pages/diagnose/diagnose_page.dart';
 import 'package:plantify/pages/home/home_page.dart';
 import 'package:plantify/pages/identify/identify_page.dart';
+import 'package:plantify/pages/login/login_page.dart';
 import 'package:plantify/pages/profile/profile_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:plantify/pages/setting/setting_page.dart';
 
 class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key,});

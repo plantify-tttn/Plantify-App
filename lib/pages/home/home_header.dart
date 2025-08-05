@@ -7,12 +7,15 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const SizedBox(width: 0,),
         SvgPicture.asset(
-          'assets/icons/logo_home.svg'
+          isDark 
+            ? 'assets/icons/logo_home_dark.svg'
+            : 'assets/icons/logo_home.svg'
         ),
         SearchButton(),
       ],
