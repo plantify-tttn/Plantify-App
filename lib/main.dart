@@ -12,10 +12,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await initHive();
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // 👈 Trong suốt
-      statusBarIconBrightness: Brightness.dark, // icon đen (nếu nền sáng)
+      statusBarColor: Colors.transparent, // status bar trong suốt
+      systemNavigationBarColor: Colors.transparent, // navigation bar trong suốt
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
   runApp(

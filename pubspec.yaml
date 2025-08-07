@@ -65,6 +65,7 @@ dependencies:
   camera: ^0.10.5+3
   path: ^1.8.3
   permission_handler: ^11.3.1
+  curved_navigation_bar: ^1.0.3
 
 dev_dependencies:
   flutter_test:

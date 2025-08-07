@@ -70,7 +70,7 @@ class UserPost extends StatelessWidget {
             child: Row(children: [CircularProgressIndicator()]),
           );
         } else if (snapshot.hasError) {
-          print('==========${snapshot.error}');
+          // print('==========${snapshot.error}');
           return const Padding(
             padding: EdgeInsets.symmetric(horizontal: 15),
             child: Row(children: [Text("Lỗi khi tải user")]),

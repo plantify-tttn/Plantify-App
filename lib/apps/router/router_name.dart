@@ -14,4 +14,5 @@ class RouterName {
   static const String routeInformation = 'route-information';
   static const String search = 'search';
   static const String detailPlant = 'detailPlant';
+  static const String comment = 'comment';
 }

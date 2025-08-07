@@ -46,7 +46,7 @@ class PostService {
       await _fetchAndSavePosts();
     } catch (e) {
       // Không cần throw, chỉ log
-      print("⚠️ Không thể làm mới dữ liệu bài viết: $e");
+      // print("⚠️ Không thể làm mới dữ liệu bài viết: $e");
     }
   }
 
@@ -98,4 +98,5 @@ class PostService {
     final box = Hive.box<PostModel>('posts');
     return box.values.toList();
   }
+  
 }

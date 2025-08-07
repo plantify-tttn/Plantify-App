@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/models/plants_model.dart';
+import 'package:plantify/models/post_model.dart';
+import 'package:plantify/pages/comment/comment_page.dart';
 import 'package:plantify/pages/home/home_center.dart';
 import 'package:plantify/pages/login/login_page.dart';
 import 'package:plantify/pages/plants/plant_detail_page.dart';
@@ -81,6 +83,14 @@ class RouterCustom {
         builder: (BuildContext context, GoRouterState state) {
           final plant = state.extra as PlantModel;
           return PlantDetailPage(plant: plant);
+        },
+      ),
+      GoRoute(
+        path: '/comment',
+        name: RouterName.comment,
+        builder: (BuildContext context, GoRouterState state) {
+          final post = state.extra as PostModel;
+          return CommentPage(post: post);
         },
       ),
       // GoRoute(

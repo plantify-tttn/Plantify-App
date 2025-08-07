@@ -1,11 +1,10 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:plantify/pages/diagnose/diagnose_page.dart';
 import 'package:plantify/pages/home/home_page.dart';
 import 'package:plantify/pages/identify/identify_page.dart';
-import 'package:plantify/pages/login/login_page.dart';
 import 'package:plantify/pages/profile/profile_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:plantify/pages/setting/setting_page.dart';
 
 class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key,});
@@ -43,70 +42,27 @@ class _HomeCenterState extends State<HomeCenter> {
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        top: false, // chỉ tránh phía dưới
-        child: Stack(
-          children: [
-            // Nền gradient tràn toàn bộ
-            Positioned.fill(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.transparent,
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // BottomNavigationBar phía trên nền
-            BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              currentIndex: _selectedIndex,
-              onTap: _onItemTapped,
-              selectedLabelStyle: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 12,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 12,
-              ),
-              items: [
-                BottomNavigationBarItem(
-                  icon: _selectedIndex == 0
-                      ? Image.asset('assets/images/home1.png', width: 30, height: 30)
-                      : Image.asset('assets/images/home2.png', width: 30, height: 30),
-                  label: AppLocalizations.of(context)!.home,
-                ),
-                BottomNavigationBarItem(
-                  icon: _selectedIndex == 1
-                      ? Image.asset('assets/images/diagnose1.png', width: 30, height: 30)
-                      : Image.asset('assets/images/diagnose2.png', width: 30, height: 30),
-                  label: AppLocalizations.of(context)!.diagnose,
-                ),
-                BottomNavigationBarItem(
-                  icon: _selectedIndex == 2
-                      ? Image.asset('assets/images/identify1.png', width: 30, height: 30)
-                      : Image.asset('assets/images/identify2.png', width: 30, height: 30),
-                  label: AppLocalizations.of(context)!.identify,
-                ),
-                BottomNavigationBarItem(
-                  icon: _selectedIndex == 3
-                      ? Image.asset('assets/images/profile1.png', width: 30, height: 30)
-                      : Image.asset('assets/images/profile2.png', width: 30, height: 30),
-                  label: AppLocalizations.of(context)!.profile,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      extendBody: true,
+      bottomNavigationBar: CurvedNavigationBar(
+      index: _selectedIndex,
+      height: 60,
+      backgroundColor: Colors.transparent, // 👈 để thấy nội dung phía dưới
+      color: Colors.green.shade700, // màu của thanh cong
+      buttonBackgroundColor: Colors.green, // màu nút nổi
+      animationDuration: const Duration(milliseconds: 300),
+      animationCurve: Curves.easeInOut,
+      items: <Widget>[
+        Image.asset('assets/images/home2.png', width: 30, height: 30),
+        Image.asset('assets/images/diagnose2.png', width: 30, height: 30),
+        Image.asset('assets/images/identify2.png', width: 30, height: 30),
+        Image.asset('assets/images/profile2.png', width: 30, height: 30),
+      ],
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+    ),
     );
   }
 }

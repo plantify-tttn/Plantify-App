@@ -14,7 +14,11 @@ class UserService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      final user = UserModel.fromJson(data['user']);
+      final userJson = <String, dynamic>{
+        ...Map<String, dynamic>.from(data['user']),
+        'accessToken': data['accessToken'] ?? '',
+      };
+      final user = UserModel.fromJson(userJson);
       hiveSaveUserById(user);
       return user;
     } else {
@@ -60,6 +64,9 @@ class UserService {
     }
   }
 
+
+
+
   static const String _boxName = 'userBox';
   static const String _userKey = 'currentUser';
 
@@ -93,5 +100,16 @@ class UserService {
   static bool isLoggedIn() {
     final box = Hive.box<UserModel>(_boxName);
     return box.containsKey(_userKey);
+  }
+
+  static String getToken() {
+    final box = Hive.box<UserModel>(_boxName);
+    final user = box.get(_userKey);
+    
+    if (user != null && user.accessToken.isNotEmpty) {
+      return user.accessToken;
+    } else {
+      throw Exception('Token not found in Hive');
+    }
   }
 }

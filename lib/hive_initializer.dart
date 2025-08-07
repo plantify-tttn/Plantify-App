@@ -1,18 +1,19 @@
 import 'package:hive_flutter/adapters.dart';
+import 'package:plantify/models/comment_model.dart';
 import 'package:plantify/models/plants_model.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/models/user_model.dart';
 
 Future<void> initHive() async {
   await Hive.initFlutter();
-
   await Hive.openBox('settings');
 
   // Đăng ký Adapter
   final adapters = [
     () => Hive.registerAdapter(UserModelAdapter()),
     () => Hive.registerAdapter(PostModelAdapter()),
-     () => Hive.registerAdapter(PlantModelAdapter()),
+    () => Hive.registerAdapter(PlantModelAdapter()),
+    () => Hive.registerAdapter(CommentModelAdapter()),
     // () => Hive.registerAdapter(DiseaseModelAdapter()),
   ];
 
@@ -25,6 +26,7 @@ Future<void> initHive() async {
     () => Hive.openBox<UserModel>('userBox'),
     () => Hive.openBox<PostModel>('posts'),
     () => Hive.openBox<PlantModel>('plants'),
+    () => Hive.openBox<CommentModel>('comments'),
     // () => Hive.openBox<DiseaseModel>('diseaseBox'),
   ];
 

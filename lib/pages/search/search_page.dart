@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/pages/search/result_search.dart';
 import 'package:plantify/pages/search/trending_plant.dart';
-import 'package:plantify/services/plants_service.dart';
 import 'package:plantify/viewmodel/search_vm.dart';
 import 'package:plantify/widgets/textfield/search_field.dart';
 import 'package:provider/provider.dart';

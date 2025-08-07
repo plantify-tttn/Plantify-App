@@ -33,7 +33,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
       _imagePath = file.path;
     });
     // 👉 TODO: Gửi ảnh file.path để phân tích
-    print("Ảnh chụp: ${file.path}");
+    // print("Ảnh chụp: ${file.path}");
   }
 
   Future<void> _pickFromGallery() async {
@@ -43,7 +43,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
       setState(() {
         _imagePath = image.path;
       });
-      print("Ảnh từ thư viện: ${image.path}");
+      // print("Ảnh từ thư viện: ${image.path}");
       // 👉 TODO: Gửi ảnh image.path để phân tích
     }
   }
@@ -92,7 +92,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                         : CameraPreview(_controller!),
                   ),
                   Positioned(
-                    bottom: 40,
+                    bottom: 60,
                     left: 30,
                     right: 30,
                     child: Row(
@@ -120,7 +120,6 @@ class _IdentifyPageState extends State<IdentifyPage> {
                             ),
                           ),
                         ),
-
                         IconButton(
                           icon: const Icon(
                             Icons.switch_camera,

@@ -14,6 +14,7 @@ class HomePage extends StatelessWidget {
           HomeHeader(),
           const SizedBox( height: 0,),
           PostList(),
+          const SizedBox( height: 60,),
         ],
       ),
     );

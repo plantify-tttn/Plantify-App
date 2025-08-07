@@ -40,10 +40,14 @@ class LoginVm extends ChangeNotifier{
 
       if (!context.mounted) return;
 
-      if (result['login'] == true) {
-        final userMap = result['user'];
+      if (result['accessToken'] != null) {
+        final userMap = <String, dynamic>{
+          ...Map<String, dynamic>.from(result['user']),
+          'accessToken': result['accessToken'], // ✅ thêm accessToken
+        };
         final userModel = UserModel.fromJson(userMap);
         await UserService.hiveSaveUser(userModel);
+        if (!context.mounted) return;
         final userVm = Provider.of<UserVm>(context, listen: false);
         userVm.loadUser(userModel.id);
         if(!context.mounted) return;
