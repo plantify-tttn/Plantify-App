@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/pages/search/result_search.dart';
 import 'package:plantify/pages/search/trending_plant.dart';
 import 'package:plantify/viewmodel/search_vm.dart';
@@ -50,7 +49,7 @@ class _SearchPageState extends State<SearchPage> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        context.goNamed(RouterName.home);
+                        context.pop();
                       },
                       icon: const Icon(Icons.arrow_back),
                     ),

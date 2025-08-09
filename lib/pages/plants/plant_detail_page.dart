@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/l10n/locale_provider.dart';
 import 'package:plantify/models/plants_model.dart';
 import 'package:plantify/pages/plants/image_carousel.dart';
@@ -20,7 +19,7 @@ class PlantDetailPage extends StatelessWidget {
         title: Text(plant.localizedName(locale)),
         leading: IconButton(
           onPressed: (){
-            context.goNamed(RouterName.home);
+            context.pop();
           }, 
           icon: Icon(Icons.arrow_back)
         ),

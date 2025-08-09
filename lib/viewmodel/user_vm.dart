@@ -1,50 +1,80 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:plantify/models/user_model.dart';
 import 'package:plantify/services/user_service.dart';
 
 class UserVm extends ChangeNotifier {
+  static const _boxName = 'userBox';
+  static const _userKey = 'currentUser';
+
+  Box<UserModel>? _box;
+  Box<UserModel> get box => _box ??= Hive.box<UserModel>(_boxName);
+
+  StreamSubscription<BoxEvent>? _sub;
   UserModel? _user;
   bool _isLoading = false;
 
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
-  bool get isLoggedIn => UserService.isLoggedIn();
 
-  // 🟢 Load từ Hive, nếu chưa có thì gọi API
-  Future<void> loadUser(String userId) async {
-    _isLoading = true;
+  // Nên coi là logged in khi có token
+  bool get isLoggedIn => (box.get(_userKey)?.accessToken.isNotEmpty ?? false);
+
+  void init() {
+    _user = box.get(_userKey);
     notifyListeners();
+    _sub = box.watch(key: _userKey).listen((_) {
+      _user = box.get(_userKey);
+      notifyListeners();
+    });
+  }
 
-    // Thử lấy từ Hive
-    _user = UserService.hiveGetUser();
-
-    // Nếu Hive chưa có, hoặc muốn đảm bảo mới nhất thì lấy từ API
+  Future<void> loadUser(String userId, {bool forceRefresh = false}) async {
+    _isLoading = true; notifyListeners();
     try {
-      final apiUser = await UserService().getUserById(userId);
-      if (_user == null || _user!.toJson().toString() != apiUser.toJson().toString()) {
-        _user = apiUser;
-        await UserService.hiveSaveUser(apiUser); // Cập nhật Hive
+      _user ??= box.get(_userKey);
+      if (forceRefresh || _user == null) {
+        final apiUser = await UserService().getUserById(userId);
+        // preserve token, đừng dùng hiveSaveUser ở đây
+        await UserService.hiveUpsertUserPartial(
+          id: apiUser.id,
+          name: apiUser.name,
+          email: apiUser.email,
+          imageUrl: apiUser.imageUrl,
+        );
       }
     } catch (e) {
-      debugPrint("❌ Lỗi loadUser: $e");
+      debugPrint('❌ Lỗi loadUser: $e');
+    } finally {
+      _isLoading = false; notifyListeners();
     }
-
-    _isLoading = false;
     notifyListeners();
   }
-  
-  // 🔄 Cập nhật user (dùng khi user chỉnh sửa thông tin)
+
   Future<void> updateUser(UserModel updatedUser) async {
-    _user = updatedUser;
-    await UserService().updateUser(updatedUser);
-    await UserService.hiveSaveUser(updatedUser);
-    notifyListeners();
+    try {
+      await UserService().updateUser(updatedUser);
+      await UserService.hiveUpsertUserPartial(
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        imageUrl: updatedUser.imageUrl,
+      );
+    } catch (e) {
+      debugPrint('❌ Lỗi updateUser: $e');
+      rethrow;
+    }
   }
 
-  // 🚪 Đăng xuất
   Future<void> logout() async {
-    _user = null;
     await UserService.hiveDeleteUser();
-    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 }
+

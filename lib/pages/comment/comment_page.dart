@@ -88,7 +88,7 @@ class _CommentPageState extends State<CommentPage> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
-                  print('❌ Lỗi FutureBuilder: ${snapshot.error}');
+                 // print('❌ Lỗi FutureBuilder: ${snapshot.error}');
                   return const Center(child: Text('Lỗi khi tải bình luận.'));
                 }
                 final comments = snapshot.data ?? [];

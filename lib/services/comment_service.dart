@@ -18,10 +18,10 @@ class CommentService {
 
     if (res.statusCode == 200) {
       final List data = jsonDecode(res.body);
-      print("==============$data"); // 👈 In ra dữ liệu để debug
+     // print("==============$data"); // 👈 In ra dữ liệu để debug
       return data.map((e) => CommentModel.fromJson(e)).toList();
     } else {
-      print("=============="); // 👈 In ra dữ liệu để debug
+     // print("=============="); // 👈 In ra dữ liệu để debug
       throw Exception("❌ Lỗi khi lấy comment: ${res.statusCode}");
     }
   }

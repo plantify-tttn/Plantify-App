@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:plantify/models/user_model.dart';
 import 'package:plantify/services/auth_services/login_service.dart';
 import 'package:plantify/services/user_service.dart';
-import 'package:plantify/viewmodel/user_vm.dart';
-import 'package:provider/provider.dart';
 
 class LoginVm extends ChangeNotifier{
   final LoginService _loginService = LoginService();
@@ -31,55 +29,37 @@ class LoginVm extends ChangeNotifier{
     notifyListeners();
   }
 
-  Future<void> login(BuildContext context) async {
+  Future<bool> login() async {
     try {
       final result = await _loginService.login(
-        email: emailController.text,
+        email: emailController.text.trim(),
         password: passController.text,
       );
 
-      if (!context.mounted) return;
-
-      if (result['accessToken'] != null) {
-        final userMap = <String, dynamic>{
-          ...Map<String, dynamic>.from(result['user']),
-          'accessToken': result['accessToken'], // ✅ thêm accessToken
-        };
-        final userModel = UserModel.fromJson(userMap);
-        await UserService.hiveSaveUser(userModel);
-        if (!context.mounted) return;
-        final userVm = Provider.of<UserVm>(context, listen: false);
-        userVm.loadUser(userModel.id);
-        if(!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("✅ Đăng nhập thành công: ${userModel.name}"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _isLogin = true;
-        notifyListeners();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("❌ Tài khoản hoặc mật khẩu không đúng"),
-            backgroundColor: Colors.red,
-          ),
-        );
-
+      final token = (result['accessToken'] ?? '').toString();
+      final userJson = Map<String, dynamic>.from(result['user'] ?? {});
+      if (token.isEmpty || userJson.isEmpty) {
         _isLogin = false;
         notifyListeners();
+        return false;
       }
+
+      // Gộp token vào user và LƯU MÀ KHÔNG LÀM RƠI TOKEN CŨ
+      final userModel = UserModel.fromJson({
+        ...userJson,
+        'accessToken': token,
+      });
+
+
+      // dùng hàm preserve token (như bạn đã thêm hiveUpsertUserPartial)
+      await UserService.hiveSaveUser(userModel); 
+      _isLogin = true;
+      notifyListeners();
+      return true;
     } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("❌ Tài khoản hoặc mật khẩu không đúng"),
-          backgroundColor: Colors.red,
-        ),
-      );
       _isLogin = false;
       notifyListeners();
+      return false;
     }
   }
 }

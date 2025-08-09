@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'theme/theme_provider.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); 
   await dotenv.load(fileName: ".env");
   await initHive();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

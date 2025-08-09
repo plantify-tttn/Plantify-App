@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
+import 'package:plantify/services/user_service.dart';
 import 'package:plantify/theme/color.dart';
 import 'package:plantify/viewmodel/login_vm.dart';
+import 'package:plantify/viewmodel/user_vm.dart';
 import 'package:plantify/widgets/button/google_signin.dart';
 import 'package:plantify/widgets/textfield/login_textfield.dart';
 import 'package:provider/provider.dart';
@@ -30,17 +32,17 @@ class LoginPage extends StatelessWidget {
             extendBody: true, // 👈 Cho gradient tràn xuống dưới
             resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              leading: IconButton(
-                onPressed: () {
-                  context.goNamed(RouterName.home);
-                }, 
-                icon: Icon(Icons.arrow_back_outlined)
-              ),
-            ),
+            // appBar: AppBar(
+            //   backgroundColor: Colors.transparent,
+            //   elevation: 0,
+            //   shadowColor: Colors.transparent,
+            //   leading: IconButton(
+            //     onPressed: () {
+            //       context.goNamed(RouterName.home);
+            //     }, 
+            //     icon: Icon(Icons.arrow_back_outlined)
+            //   ),
+            // ),
             body: Stack(
               children: [
                 Positioned.fill(
@@ -131,12 +133,26 @@ class LoginPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       GestureDetector(
                         onTap: () async {
-                          if (loginVm.canLogin == false){
-                            return;
-                          }
-                          await loginVm.login(context);
+                          if (!loginVm.canLogin) return;
+
+                          final ok = await loginVm.login();
                           if (!context.mounted) return;
-                          if(loginVm.isLogin) context.goNamed(RouterName.home);
+
+                          if (ok) {
+                            final saved = UserService.hiveGetUser(); // lấy user vừa lưu
+                              if (saved != null) {
+                                await context.read<UserVm>().loadUser(saved.id, forceRefresh: true);
+                              }
+                              if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('✅ Đăng nhập thành công')),
+                            );
+                            context.goNamed(RouterName.home);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('❌ Tài khoản hoặc mật khẩu không đúng')),
+                            );
+                          }
                         },
                         child: Container(
                           width: 160,

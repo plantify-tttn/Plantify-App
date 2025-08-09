@@ -4,7 +4,6 @@ import 'package:plantify/pages/diagnose/diagnose_page.dart';
 import 'package:plantify/pages/home/home_page.dart';
 import 'package:plantify/pages/identify/identify_page.dart';
 import 'package:plantify/pages/profile/profile_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key,});
@@ -23,11 +22,6 @@ class _HomeCenterState extends State<HomeCenter> {
     ProfilePage(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
   void refreshMiniPlayer() {
     setState(() {});
   }
@@ -47,8 +41,8 @@ class _HomeCenterState extends State<HomeCenter> {
       index: _selectedIndex,
       height: 60,
       backgroundColor: Colors.transparent, // 👈 để thấy nội dung phía dưới
-      color: Colors.green.shade700, // màu của thanh cong
-      buttonBackgroundColor: Colors.green, // màu nút nổi
+      color: const Color.fromARGB(255, 110, 135, 112), // màu của thanh cong
+      buttonBackgroundColor: const Color.fromARGB(255, 57, 173, 61), // màu nút nổi
       animationDuration: const Duration(milliseconds: 300),
       animationCurve: Curves.easeInOut,
       items: <Widget>[

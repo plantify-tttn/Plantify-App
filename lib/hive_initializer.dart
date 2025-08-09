@@ -8,6 +8,9 @@ Future<void> initHive() async {
   await Hive.initFlutter();
   await Hive.openBox('settings');
 
+// await Hive.deleteBoxFromDisk('userBox');
+
+
   // Đăng ký Adapter
   final adapters = [
     () => Hive.registerAdapter(UserModelAdapter()),

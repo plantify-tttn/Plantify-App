@@ -44,4 +44,21 @@ class UserModel extends HiveObject {
       "accessToken": accessToken,
     };
   }
+
+  // ✅ tiện cho UI cập nhật
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? imageUrl,
+    String? email,
+    String? accessToken,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      email: email ?? this.email,
+      accessToken: accessToken ?? this.accessToken,
+    );
+  }
 }

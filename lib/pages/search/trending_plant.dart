@@ -10,11 +10,12 @@ class TrendingPlant extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final count = listItems.length < 4 ? listItems.length : 4;
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       padding: EdgeInsets.zero,
-      itemCount: listItems.length,
+      itemCount: count,
       itemBuilder: (context, index){
         return trendingCard(context,listItems[index]);
       }

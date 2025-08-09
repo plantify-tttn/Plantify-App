@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/pages/comment/comment_page.dart';
 import 'package:plantify/services/favorite_service.dart';
@@ -38,7 +36,7 @@ class _PostMainState extends State<PostMain> {
         isLoved = favorites.contains(widget.post.id);
       });
     } catch (e) {
-      print('❌ Lỗi khi tải trạng thái love: $e');
+      //print('❌ Lỗi khi tải trạng thái love: $e');
     }
   }
 
@@ -62,7 +60,7 @@ class _PostMainState extends State<PostMain> {
         }
       }
     } catch (e) {
-      print("❌ Lỗi khi toggle love: $e");
+      //print("❌ Lỗi khi toggle love: $e");
     }
   }
 

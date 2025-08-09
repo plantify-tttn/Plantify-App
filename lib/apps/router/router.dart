@@ -7,6 +7,8 @@ import 'package:plantify/pages/comment/comment_page.dart';
 import 'package:plantify/pages/home/home_center.dart';
 import 'package:plantify/pages/login/login_page.dart';
 import 'package:plantify/pages/plants/plant_detail_page.dart';
+import 'package:plantify/pages/posts/craeate_post_page.dart';
+import 'package:plantify/pages/posts/craete_post.dart';
 import 'package:plantify/pages/register/register_page.dart';
 import 'package:plantify/pages/search/search_page.dart';
 import 'package:plantify/pages/welcome/welcome_page.dart';
@@ -66,33 +68,45 @@ class RouterCustom {
         builder: (BuildContext context, GoRouterState state) {
           return HomeCenter();
         },
+        routes: <RouteBase>[
+          GoRoute(
+            path: '/craetePost',
+            name: RouterName.createPost,
+            builder: (BuildContext context, GoRouterState state) {
+              return CreatePostPage();
+            },
+          ),
+          GoRoute(
+            path: '/search',
+            name: RouterName.search,
+            builder: (BuildContext context, GoRouterState state) {
+              return ChangeNotifierProvider(
+                create: (_)=> SearchVm(),
+                child: SearchPage(),
+              );
+            },
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/detailPlat',
+                name: RouterName.detailPlant,
+                builder: (BuildContext context, GoRouterState state) {
+                  final plant = state.extra as PlantModel;
+                  return PlantDetailPage(plant: plant);
+                },
+              ),
+            ]
+          ),
+          GoRoute(
+            path: '/comment',
+            name: RouterName.comment,
+            builder: (BuildContext context, GoRouterState state) {
+              final post = state.extra as PostModel;
+              return CommentPage(post: post);
+            },
+          ),
+        ]
       ),
-      GoRoute(
-        path: '/search',
-        name: RouterName.search,
-        builder: (BuildContext context, GoRouterState state) {
-          return ChangeNotifierProvider(
-            create: (_)=> SearchVm(),
-            child: SearchPage(),
-          );
-        },
-      ),
-      GoRoute(
-        path: '/detailPlat',
-        name: RouterName.detailPlant,
-        builder: (BuildContext context, GoRouterState state) {
-          final plant = state.extra as PlantModel;
-          return PlantDetailPage(plant: plant);
-        },
-      ),
-      GoRoute(
-        path: '/comment',
-        name: RouterName.comment,
-        builder: (BuildContext context, GoRouterState state) {
-          final post = state.extra as PostModel;
-          return CommentPage(post: post);
-        },
-      ),
+      
       // GoRoute(
       //   path: '/my_ticket',
       //   name: RouterName.my_ticket,
