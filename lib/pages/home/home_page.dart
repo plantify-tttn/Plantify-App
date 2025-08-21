@@ -18,7 +18,6 @@ class _HomePageState extends State<HomePage> {
       if (saved != null) {
         await context.read<UserVm>().loadUser(saved.id, forceRefresh: true);
       }
-    await Future.delayed(const Duration(milliseconds: 600)); // demo
   }
 
   @override

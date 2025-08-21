@@ -10,13 +10,14 @@ class PlantsService {
   final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
   Future<List<PlantModel>> getPlants() async {
-    final response = await http.get(Uri.parse('$baseUrl/plants'));
+    final response = await http.get(Uri.parse('$baseUrl/plant'));
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final List plantsJson = data['plants'];
+       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      final List plantsJson =
+      decoded is List ? decoded : (decoded['plants'] as List? ?? []);
       final plants = plantsJson.map((e) => PlantModel.fromJson(e)).toList();
-      savePlantsToHive(plants);
+      await savePlantsToHive(plants);
       return plants;
     } else {
       throw Exception('Failed to load plants');

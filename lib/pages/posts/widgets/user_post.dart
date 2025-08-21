@@ -14,9 +14,9 @@ class UserPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = UserService.hiveGetUserById(post.uid);
+    final user = UserService.hiveGetUserById(post.userid);
     if(user != null){
-      final formattedTime = _formatTime(post.createAt);
+      final formattedTime = _formatTime(post.created_at);
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Row(
@@ -62,7 +62,7 @@ class UserPost extends StatelessWidget {
       );
     }
     return FutureBuilder<UserModel>(
-      future: UserService().getUserById(post.uid),
+      future: UserService().getUserById(post.userid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -80,7 +80,7 @@ class UserPost extends StatelessWidget {
         }
 
         final user = snapshot.data!;
-        final formattedTime = _formatTime(post.createAt);
+        final formattedTime = _formatTime(post.created_at);
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),

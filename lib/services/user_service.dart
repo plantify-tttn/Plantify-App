@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
@@ -11,32 +12,39 @@ class UserService {
 
   /// Lấy thông tin người dùng theo ID
   Future<UserModel> getUserById(String id) async {
-    final url = Uri.parse('$baseUrl/users/$id');
-    final response = await http.get(url);
+    final box = Hive.box<UserModel>('userBox');
+    for (final key in box.keys) { 
+      final user = box.get(key); 
+      debugPrint('🔹 [$key] ${user?.name} | ${user?.email} | ${user?.id}'); 
+    }
+    try {
+      final user = hiveGetUserById(id);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final userJson = <String, dynamic>{
-        ...Map<String, dynamic>.from(data['user']),
-        'accessToken': data['accessToken'] ?? '',
-      };
-      final user = UserModel.fromJson(userJson);
-      hiveSaveUserById(user);
+      if (user == null) {
+        throw Exception('❌ Không tìm thấy người dùng với id: $id');
+      }
+
       return user;
-    } else {
-      throw Exception('Lỗi khi lấy người dùng: ${response.statusCode}');
+    } catch (e, stackTrace) {
+      debugPrint('❌ [getUserById] Lỗi khi lấy user với id: $id');
+      debugPrint('🔍 Lỗi: $e');
+      debugPrint('📌 StackTrace: $stackTrace');
+      return UserModel.empty();
     }
   }
 
   /// Lấy danh sách tất cả người dùng
   Future<List<UserModel>> getAllUsers() async {
-    final url = Uri.parse('$baseUrl/users');
+    final url = Uri.parse('$baseUrl/auth/all-users');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final List usersJson = data['users'];
-      return usersJson.map((e) => UserModel.fromJson(e)).toList();
+      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      final List list =
+          decoded is List ? decoded : (decoded['users'] as List? ?? const []);
+          return list
+              .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
+              .toList();
     } else {
       throw Exception('Lỗi khi lấy danh sách người dùng');
     }
@@ -165,6 +173,13 @@ class UserService {
     final box = Hive.box<UserModel>(_boxName);
     await box.put(_userKey, user);
   }
+
+  static Future<void> hiveSaveAllUser(UserModel user) async {
+    final box = Hive.box<UserModel>(_boxName);
+    await box.put(user.id.toString(), user);
+  }
+
+
   static Future<void> hiveSaveUserById(UserModel user) async {
     final box = Hive.box<UserModel>('userBox');
     await box.put(user.id, user); // key là user.id
@@ -177,7 +192,12 @@ class UserService {
   }
   static UserModel? hiveGetUserById(String userId) {
     final box = Hive.box<UserModel>('userBox');
-    return box.get(userId); // lấy theo key userId
+    try {
+      return box.get(userId); // lấy theo key userId
+    } catch (e) {
+      debugPrint('❌ Lỗi khi tìm user trong Hive: $e');
+      return null;
+    }
   }
 
   // ✅ Xoá user khi logout

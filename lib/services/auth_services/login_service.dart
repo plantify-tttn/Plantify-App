@@ -16,6 +16,7 @@ class LoginService {
       url,
       headers: {
         "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
       },
       body: jsonEncode({
         "email": email,
@@ -23,7 +24,7 @@ class LoginService {
       }),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
       return data;
     } else {

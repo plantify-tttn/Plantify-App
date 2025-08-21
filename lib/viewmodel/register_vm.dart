@@ -127,7 +127,7 @@ class RegisterVm extends ChangeNotifier {
       final user = result['data']['user'];
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Đăng ký thành công: ${user['name']}"),
+          content: Text("Đăng ký thành công"),
           backgroundColor: Colors.green,
         ),
       );

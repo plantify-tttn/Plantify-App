@@ -51,6 +51,19 @@ class UserVm extends ChangeNotifier {
     }
     notifyListeners();
   }
+  
+  Future<void> getAllUsers() async {
+    try {
+      final users = await UserService().getAllUsers();
+
+      for (final user in users) {
+        await UserService.hiveSaveAllUser(user);
+      }
+      debugPrint('✅ Đã lấy và lưu ${users.length} người dùng vào Hive.');
+    } catch (e) {
+      debugPrint('❌ Lỗi getAllUsers: $e');
+    }
+  }
 
   Future<void> updateUser(UserModel updatedUser) async {
     try {

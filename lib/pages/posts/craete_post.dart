@@ -10,6 +10,7 @@ class CraetePost extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = UserService.hiveGetUser();
+    print('====${user!.imageUrl}');
     return GestureDetector(
       onTap: () {
         context.goNamed(RouterName.createPost);
@@ -35,7 +36,7 @@ class CraetePost extends StatelessWidget {
             CircleAvatar(
               radius: 20,
               backgroundImage: NetworkImage(
-                user!.imageUrl, // Replace with actual user avatar URL
+                user.imageUrl, // Replace with actual user avatar URL
               ),
             ),
             const SizedBox(width: 10),

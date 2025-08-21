@@ -28,22 +28,29 @@ class UserModel extends HiveObject {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'].toString(),
-      name: json['name'] ?? 'No name',
-      imageUrl: json['imageUrl'] ?? 'https://cdn-icons-png.flaticon.com/512/8792/8792047.png',
+      name: json['username'] ?? 'No name',
+      imageUrl: json['imageurl'] ?? 'https://cdn-icons-png.flaticon.com/512/8792/8792047.png',
       email: json['email'] ?? '',
-      accessToken: json['accessToken'] ?? '', // thêm ở đây
+      accessToken: json['access_token'] ?? '', // thêm ở đây
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       "id": id,
-      "name": name,
-      "imageUrl": imageUrl,
+      "username": name,
+      "imageurl": imageUrl,
       "email": email,
-      "accessToken": accessToken,
+      "access_token": accessToken,
     };
   }
+  factory UserModel.empty() => UserModel(
+        id: '0',
+        name: 'Guest',
+        email: 'guest@example.com',
+        imageUrl: 'https://cdn-icons-png.flaticon.com/512/8792/8792047.png',
+        accessToken: '',
+      );
 
   // ✅ tiện cho UI cập nhật
   UserModel copyWith({

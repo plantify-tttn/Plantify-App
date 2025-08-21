@@ -18,12 +18,12 @@ class PostModelAdapter extends TypeAdapter<PostModel> {
     };
     return PostModel(
       id: fields[0] as String,
-      uid: fields[1] as String,
+      userid: fields[1] as String,
       content: fields[2] as String,
-      imageUrl: fields[3] as String,
+      imageurl: fields[3] as String,
       loveCount: fields[4] as int,
       commentCount: fields[5] as int,
-      createAt: fields[6] as String,
+      created_at: fields[6] as String,
     );
   }
 
@@ -34,17 +34,17 @@ class PostModelAdapter extends TypeAdapter<PostModel> {
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.uid)
+      ..write(obj.userid)
       ..writeByte(2)
       ..write(obj.content)
       ..writeByte(3)
-      ..write(obj.imageUrl)
+      ..write(obj.imageurl)
       ..writeByte(4)
       ..write(obj.loveCount)
       ..writeByte(5)
       ..write(obj.commentCount)
       ..writeByte(6)
-      ..write(obj.createAt);
+      ..write(obj.created_at);
   }
 
   @override

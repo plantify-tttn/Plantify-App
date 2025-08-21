@@ -35,21 +35,25 @@ class LoginVm extends ChangeNotifier{
         email: emailController.text.trim(),
         password: passController.text,
       );
+      final id = (result['id'] ?? 'currentUser');
+      final name  = (result['user'] ?? result['name'] ?? '').toString();
+      final token = (result['access_token'] ?? '').toString();
+      final imageUrl = (result['imageUrl'] as String?) ??
+        'https://cdn-icons-png.flaticon.com/512/8792/8792047.png';
+      var email = (result['email'] ?? '').toString();
 
-      final token = (result['accessToken'] ?? '').toString();
-      final userJson = Map<String, dynamic>.from(result['user'] ?? {});
-      if (token.isEmpty || userJson.isEmpty) {
+      final userModel = UserModel(
+        id: id,
+        name: name,
+        imageUrl: imageUrl,
+        email: email,
+        accessToken: token,
+      );
+      if (token.isEmpty || name.isEmpty) {
         _isLogin = false;
         notifyListeners();
         return false;
       }
-
-      // Gộp token vào user và LƯU MÀ KHÔNG LÀM RƠI TOKEN CŨ
-      final userModel = UserModel.fromJson({
-        ...userJson,
-        'accessToken': token,
-      });
-
 
       // dùng hàm preserve token (như bạn đã thêm hiveUpsertUserPartial)
       await UserService.hiveSaveUser(userModel); 

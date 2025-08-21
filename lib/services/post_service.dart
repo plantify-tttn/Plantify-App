@@ -27,20 +27,39 @@ class PostService {
   }
 
   /// Gọi API và lưu kết quả vào Hive
-  Future<List<PostModel>> _fetchAndSavePosts() async {
-    final response = await http.get(Uri.parse('$baseUrl/posts'));
+  Future<List<PostModel>> _fetchAndSavePosts({
+    int page = 1,
+    int limit = 10,
+    String? token, // truyền token nếu có
+  }) async {
+    final uri = Uri.parse('$baseUrl/posts').replace(queryParameters: {
+      'page': '$page',
+      'limit': '$limit',
+    });
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final List postsJson = data['posts'];
-      final posts = postsJson.map((e) => PostModel.fromJson(e)).toList();
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
 
-      // 🔄 Lưu vào Hive
-      await savePostsToHive(posts);
-      return posts;
-    } else {
-      throw Exception('Failed to fetch posts from API');
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch posts: ${response.statusCode} - ${response.body}');
     }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+
+    // API trả về mảng trong field "data" (không phải "posts")
+    final List rawList = (body['data'] ?? body['posts'] ?? []) as List;
+
+    final posts = rawList
+        .map<PostModel>((e) => PostModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    await savePostsToHive(posts);
+    print('=====${posts}');
+    return posts;
   }
 
   /// Gọi API để cập nhật Hive trong nền

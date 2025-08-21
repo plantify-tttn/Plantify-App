@@ -87,7 +87,7 @@ class _PostMainState extends State<PostMain> {
           height: 260,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(widget.post.imageUrl),
+              image: NetworkImage(widget.post.imageurl),
               fit: BoxFit.cover,
             ),
           ),

@@ -21,6 +21,7 @@ class _HomeCenterState extends State<HomeCenter> {
     IdentifyPage(),
     ProfilePage(),
   ];
+   
 
   void refreshMiniPlayer() {
     setState(() {});

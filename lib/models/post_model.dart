@@ -8,13 +8,13 @@ class PostModel extends HiveObject {
   final String id;
 
   @HiveField(1)
-  final String uid;
+  final String userid;
 
   @HiveField(2)
   final String content;
 
   @HiveField(3)
-  final String imageUrl;
+  final String imageurl;
 
   @HiveField(4)
   final int loveCount;
@@ -23,39 +23,39 @@ class PostModel extends HiveObject {
   final int commentCount;
 
   @HiveField(6)
-  final String createAt;
+  final String created_at;
 
   PostModel({
     required this.id,
-    required this.uid,
+    required this.userid,
     required this.content,
-    required this.imageUrl,
+    required this.imageurl,
     required this.loveCount,
     required this.commentCount,
-    required this.createAt,
+    required this.created_at,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
       id: json['id'],
-      uid: json['uid'],
-      content: json['content'],
-      imageUrl: json['imageUrl'],
-      loveCount: json['loveCount'],
-      commentCount: json['commentCount'],
-      createAt: json['createAt'],
+      userid: (json['userid'] ?? '').toString(),
+      content: (json['content'] ?? '') as String,
+      imageurl: (json['imageurl'] ?? '') as String,
+      loveCount: (json['loveCount'] ?? 0) as int,
+      commentCount: (json['commentCount'] ?? 0) as int,
+      created_at: (json['created_at'] ?? '').toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'uid': uid,
+      'userid': userid,
       'content': content,
-      'imageUrl': imageUrl,
+      'imageurl': imageurl,
       'loveCount': loveCount,
       'commentCount': commentCount,
-      'createAt': createAt,
+      'created_at': created_at,
     };
   }
 }

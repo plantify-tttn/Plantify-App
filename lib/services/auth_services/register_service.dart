@@ -11,11 +11,11 @@ class RegisterService {
     required String email,
     required String password,
   }) async {
-    final url = Uri.parse("$baseUrl/register");
+    final url = Uri.parse("$baseUrl/auth/register");
 
     final response = await http.post(
       url,
-      headers: {"Content-Type": "application/json"},
+      headers: {"Content-Type": "application/json","ngrok-skip-browser-warning": "true"},
       body: jsonEncode({
         "username": username,
         "email": email,
@@ -23,12 +23,12 @@ class RegisterService {
       }),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       return {"success": true, "data": jsonDecode(response.body)};
     } else {
       return {
-        "success": false,
         "message": "Lỗi ${response.statusCode}: ${response.reasonPhrase}"
+        "access_token"
       };
     }
   }
