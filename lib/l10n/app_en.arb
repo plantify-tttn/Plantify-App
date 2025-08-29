@@ -16,6 +16,7 @@
   "changeTheme": "Chnage theme",
   "chooseLanguage": "Choose language",
   "trendingPlants": "Trending Plants",
+  "trendingDisease": "Trending Disease",
   "overview": "Overview",
   "characteristics": "Characteristics",
   "cultivation": "Cultivation",
@@ -55,5 +56,9 @@
   "emailRequired": "Email is required",
   "emailInvalid": "Invalid email",
   "profileUpdateSuccess": "Profile updated successfully",
-  "saveError": "Error saving"
+  "saveError": "Error saving",
+  "causes": "Causes",
+  "symptoms": "Symptoms",
+  "prevention": "Prevention",
+  "treatment": "Treatment"
 }

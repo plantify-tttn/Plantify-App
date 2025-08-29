@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart' show Hive;
 import 'package:http/http.dart' as http;
+import 'package:plantify/models/disease_model.dart';
 import 'package:plantify/models/plants_model.dart';
 
 class PlantsService {
@@ -23,9 +24,27 @@ class PlantsService {
       throw Exception('Failed to load plants');
     }
   }
+  Future<List<DiseaseModel>> getDisease() async {
+    final response = await http.get(Uri.parse('$baseUrl/plant/diseases'));
+
+    if (response.statusCode == 200) {
+       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      final List plantsJson =
+      decoded is List ? decoded : (decoded['disease'] as List? ?? []);
+      final disease = plantsJson.map((e) => DiseaseModel.fromJson(e)).toList();
+      await saveDiseaseToHive(disease);
+      return disease;
+    } else {
+      throw Exception('Failed to load plants');
+    }
+  }
   /// Lấy dữ liệu từ Hive
   List<PlantModel> getPlantsFromHive() {
     final box = Hive.box<PlantModel>('plants');
+    return box.values.toList();
+  }
+  List<DiseaseModel> getDiseaseFromHive() {
+    final box = Hive.box<DiseaseModel>('diseases');
     return box.values.toList();
   }
 
@@ -34,6 +53,13 @@ class PlantsService {
     final box = Hive.box<PlantModel>('plants');
     await box.clear();
     for (var plant in plants) {
+      await box.put(plant.id, plant);
+    }
+  }
+  Future<void> saveDiseaseToHive(List<DiseaseModel> disease) async {
+    final box = Hive.box<DiseaseModel>('diseases');
+    await box.clear();
+    for (var plant in disease) {
       await box.put(plant.id, plant);
     }
   }
@@ -67,5 +93,9 @@ class PlantsService {
     } else {
       throw Exception('❌ Failed to load plants');
     }
+  }
+  PlantModel? getPlantById(String id) {
+    final box = Hive.box<PlantModel>('plants');
+    return box.get(id); // Trả về null nếu không có
   }
 }

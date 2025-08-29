@@ -18,7 +18,7 @@ class CommentModelAdapter extends TypeAdapter<CommentModel> {
     };
     return CommentModel(
       id: fields[0] as String,
-      uid: fields[1] as String,
+      uid: fields[1] as int,
       content: fields[2] as String,
       createdAt: fields[3] as DateTime,
     );

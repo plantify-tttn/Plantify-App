@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:plantify/pages/search/result_search.dart';
+import 'package:plantify/pages/search/result_disease_search.dart';
+import 'package:plantify/pages/search/result_plan_search.dart';
+import 'package:plantify/pages/search/trending_disease.dart';
 import 'package:plantify/pages/search/trending_plant.dart';
-import 'package:plantify/viewmodel/search_vm.dart';
+import 'package:plantify/provider/search_vm.dart';
 import 'package:plantify/widgets/textfield/search_field.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,7 +27,8 @@ class _SearchPageState extends State<SearchPage> {
 
     // Delay 1 frame để context sẵn sàng trước khi gọi focus
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SearchVm>(context, listen: false).getItems();
+      Provider.of<SearchVm>(context, listen: false).getPlanItems();
+      Provider.of<SearchVm>(context, listen: false).getDiseaseItems();
       _focusNode.requestFocus(); // Tự động bật bàn phím
     });
   }
@@ -55,30 +58,47 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                     Expanded(
                       child: SearchField(
-                        controller: searchVm.searchController,
-                        focusNode: _focusNode, // Truyền vào ô tìm kiếm
-                        onChanged: (value) {
-                          searchVm.search(value, context);
-                        }
-                      ),
+                          controller: searchVm.searchController,
+                          focusNode: _focusNode, // Truyền vào ô tìm kiếm
+                          onChanged: (value) {
+                            searchVm.search(value, context);
+                          }),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                ResultSearch(listItems: searchVm.filteredItems, searchController: searchVm.searchController,),
+                ResultPlanSearch(
+                  listItems: searchVm.filteredPlanItems,
+                  searchController: searchVm.searchController,
+                ),
+                ResultDiseaseSearch(
+                  listItems: searchVm.filterDiseaseItems,
+                  searchController: searchVm.searchController,
+                ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       AppLocalizations.of(context)!.trendingPlants,
-                      style: TextStyle(
-                        fontSize: 20
-                      ),
+                      style: TextStyle(fontSize: 20),
                     ),
                   ),
                 ),
-                TrendingPlant(listItems: searchVm.allItems,)
+                TrendingPlant(
+                  listItems: searchVm.allPlanItems,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      AppLocalizations.of(context)!.trendingDisease,
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
+                ),
+                TrendingDisease(listItems: searchVm.allDiseaseItems)
               ],
             ),
           ),

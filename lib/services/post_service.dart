@@ -8,28 +8,18 @@ import 'package:plantify/models/post_model.dart';
 import 'package:plantify/services/user_service.dart';
 
 class PostService {
+  PostService._internal();
+  static final PostService _instance = PostService._internal();
+  factory PostService(){
+    return _instance;
+  }
   final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
-  /// Lấy danh sách bài viết
-  Future<List<PostModel>> getPosts() async {
-    final box = Hive.box<PostModel>('posts');
-    final localPosts = box.values.toList();
-
-    // Nếu Hive đã có dữ liệu, trả về ngay
-    if (localPosts.isNotEmpty) {
-      // 🔃 Đồng thời cập nhật lại từ server (không chờ)
-      _refreshPostsInBackground();
-      return localPosts;
-    }
-
-    // Nếu Hive không có → gọi API
-    return await _fetchAndSavePosts();
-  }
 
   /// Gọi API và lưu kết quả vào Hive
-  Future<List<PostModel>> _fetchAndSavePosts({
+  Future<List<PostModel>> fetchAndSavePosts({
     int page = 1,
-    int limit = 10,
+    int limit = 5,
     String? token, // truyền token nếu có
   }) async {
     final uri = Uri.parse('$baseUrl/posts').replace(queryParameters: {
@@ -45,7 +35,7 @@ class PostService {
     final response = await http.get(uri, headers: headers);
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to fetch posts: ${response.statusCode} - ${response.body}');
+      return [];
     }
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -56,16 +46,38 @@ class PostService {
     final posts = rawList
         .map<PostModel>((e) => PostModel.fromJson(e as Map<String, dynamic>))
         .toList();
+    return posts;
+  }
+  /// Gọi API và lưu kết quả vào Hive
+  Future<List<PostModel>> fetchUPosts({
+    required String token, // truyền token nếu có
+  }) async {
+    final uri = Uri.parse('$baseUrl/posts/user');
 
-    await savePostsToHive(posts);
-    print('=====${posts}');
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      if (token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      return [];
+    }
+
+    // API trả về mảng trong field "data" (không phải "posts")
+    final rawList = jsonDecode(response.body) as List;
+
+    final posts = rawList
+        .map<PostModel>((e) => PostModel.fromJson(e as Map<String, dynamic>))
+        .toList();
     return posts;
   }
 
   /// Gọi API để cập nhật Hive trong nền
   void _refreshPostsInBackground() async {
     try {
-      await _fetchAndSavePosts();
+      await fetchAndSavePosts();
     } catch (e) {
       // Không cần throw, chỉ log
       // print("⚠️ Không thể làm mới dữ liệu bài viết: $e");
@@ -85,47 +97,31 @@ class PostService {
     }
   }
 
-  Future<Map<String, dynamic>> createPost({
+  Future<void> createPost({
     required String content,
-    File? image,
-    String? token,
+    required File image,
+    required String token
   }) async {
-    if (baseUrl.isEmpty) {
-      throw Exception('BASE_URL is empty. Did you call dotenv.load?');
+    final uri = Uri.parse('$baseUrl/posts');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['content'] = content;
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image', // tên field bên backend
+        image.path,
+      ),
+    );
+    final response = await request.send();
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('Post created successfully');
+    } else {
+      print('Failed to create post: ${response.statusCode}');
+      final respStr = await response.stream.bytesToString();
+      print(respStr);
     }
-
-    final uri = Uri.parse('$baseUrl/posts/create'); // đổi path theo BE của bạn
-    final req = http.MultipartRequest('POST', uri);
-
-    // Text fields
-    req.fields['content'] = content;
-
-    // Auth
-    final t = token ?? UserService.getToken();
-    if (t.isNotEmpty) {
-      req.headers['Authorization'] = 'Bearer $t';
-    }
-
-    // File (nếu có)
-    if (image != null) {
-      req.files.add(
-        await http.MultipartFile.fromPath(
-          'image', // đổi tên field theo BE (vd: 'photo' hoặc 'file')
-          image.path,
-          filename: p.basename(image.path),
-        ),
-      );
-    }
-
-    final res = await req.send();
-    final body = await res.stream.bytesToString();
-
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception('Create post failed (${res.statusCode}): $body');
-    }
-
-    final json = jsonDecode(body);
-    return (json is Map<String, dynamic>) ? json : {'data': json};
+    
   }
 
   /// Xóa bài viết

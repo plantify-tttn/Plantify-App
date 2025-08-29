@@ -211,8 +211,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     setState(() => _saving = true);
     try {
-      final updated = await UserService().updateProfileWithOptionalAvatar(
-        current: _user!,                          // user hiện tại trong Hive
+      final updated = await UserService().updateProfileWithOptionalAvatar(                          // user hiện tại trong Hive
         name: _nameCtl.text.trim(),
         email: _emailCtl.text.trim(),
         newAvatar: _localAvatar,                  // File?; null nếu không đổi ảnh

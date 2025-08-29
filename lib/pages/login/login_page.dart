@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:plantify/theme/color.dart';
-import 'package:plantify/viewmodel/login_vm.dart';
-import 'package:plantify/viewmodel/user_vm.dart';
+import 'package:plantify/provider/login_vm.dart';
+import 'package:plantify/provider/user_vm.dart';
 import 'package:plantify/widgets/button/google_signin.dart';
 import 'package:plantify/widgets/textfield/login_textfield.dart';
 import 'package:provider/provider.dart';
@@ -39,7 +39,7 @@ class LoginPage extends StatelessWidget {
             //   leading: IconButton(
             //     onPressed: () {
             //       context.goNamed(RouterName.home);
-            //     }, 
+            //     },
             //     icon: Icon(Icons.arrow_back_outlined)
             //   ),
             // ),
@@ -60,7 +60,6 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 Center(
                   child: Column(
                     children: [
@@ -138,19 +137,23 @@ class LoginPage extends StatelessWidget {
                           final ok = await loginVm.login();
                           if (!context.mounted) return;
 
-                          if (ok) {
-                            final saved = UserService.hiveGetUser(); // lấy user vừa lưu
-                              if (saved != null) {
-                                await context.read<UserVm>().loadUser(saved.id, forceRefresh: true);
-                              }
-                              if (!context.mounted) return;
+                          if (ok == 'ok') {
+                            final saved =
+                                UserService.hiveGetUser(); // lấy user vừa lưu
+                            if (saved != null) {
+                              await context
+                                  .read<UserVm>()
+                                  .loadUser(saved.id, forceRefresh: true);
+                            }
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('✅ Đăng nhập thành công')),
+                              const SnackBar(
+                                  content: Text('✅ Đăng nhập thành công')),
                             );
                             context.goNamed(RouterName.home);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('❌ Tài khoản hoặc mật khẩu không đúng')),
+                              SnackBar(content: Text(ok)),
                             );
                           }
                         },
@@ -159,7 +162,9 @@ class LoginPage extends StatelessWidget {
                           height: 37,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            color: loginVm.canLogin ? Color(MyColor.pr2) : Color(MyColor.grey),
+                            color: loginVm.canLogin
+                                ? Color(MyColor.pr2)
+                                : Color(MyColor.grey),
                           ),
                           child: Center(
                             child: Text(
@@ -176,11 +181,9 @@ class LoginPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       GoogleSignin(),
                       const SizedBox(height: 70),
-                      SvgPicture.asset(
-                        isDark 
+                      SvgPicture.asset(isDark
                           ? 'assets/icons/logo_welcome_dark.svg'
-                          : 'assets/icons/logo_welcome.svg'
-                      ),
+                          : 'assets/icons/logo_welcome.svg'),
                     ],
                   ),
                 ),

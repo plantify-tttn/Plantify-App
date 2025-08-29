@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/theme/color.dart';
-import 'package:plantify/viewmodel/register_vm.dart';
+import 'package:plantify/provider/register_vm.dart';
 import 'package:plantify/widgets/button/google_signin.dart';
 import 'package:plantify/widgets/textfield/login_textfield.dart';
 import 'package:provider/provider.dart';

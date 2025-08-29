@@ -1,5 +1,6 @@
 import 'package:hive_flutter/adapters.dart';
 import 'package:plantify/models/comment_model.dart';
+import 'package:plantify/models/disease_model.dart';
 import 'package:plantify/models/plants_model.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/models/user_model.dart';
@@ -9,7 +10,7 @@ Future<void> initHive() async {
   await Hive.openBox('settings');
 
   // await Hive.deleteBoxFromDisk('posts');
-  // await Hive.deleteBoxFromDisk('userBox');
+  // await Hive.deleteBoxFromDisk('comments');
 
 
   // Đăng ký Adapter
@@ -18,6 +19,7 @@ Future<void> initHive() async {
     () => Hive.registerAdapter(PostModelAdapter()),
     () => Hive.registerAdapter(PlantModelAdapter()),
     () => Hive.registerAdapter(CommentModelAdapter()),
+    () => Hive.registerAdapter(DiseaseModelAdapter()),
     // () => Hive.registerAdapter(DiseaseModelAdapter()),
   ];
 
@@ -31,6 +33,7 @@ Future<void> initHive() async {
     () => Hive.openBox<PostModel>('posts'),
     () => Hive.openBox<PlantModel>('plants'),
     () => Hive.openBox<CommentModel>('comments'),
+    () => Hive.openBox<DiseaseModel>('diseases')
     // () => Hive.openBox<DiseaseModel>('diseaseBox'),
   ];
 

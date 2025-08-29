@@ -16,6 +16,7 @@
   "changeTheme": "Đổi giao diện",
   "chooseLanguage": "Chọn ngôn ngữ",
   "trendingPlants": "Cây trồng Hot",
+  "trendingDisease": "Bệnh phổ biến",
   "overview": "Tổng quan",
   "characteristics": "Đặc điểm",
   "cultivation": "Canh tác",
@@ -55,5 +56,9 @@
   "emailRequired": "Email không được để trống",
   "emailInvalid": "Email không hợp lệ",
   "profileUpdateSuccess": "Cập nhật hồ sơ thành công",
-  "saveError": "Lỗi khi lưu"
+  "saveError": "Lỗi khi lưu",
+  "causes": "Nguyên nhân",
+  "symptoms": "Triệu chứng",
+  "prevention": "Phòng ngừa",
+  "treatment": "Điều trị"
 }

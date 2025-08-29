@@ -33,19 +33,47 @@ class _CommentPageState extends State<CommentPage> {
   }
 
   Future<void> _addComment() async {
-    final text = _controller.text.trim();
-    if (text.isNotEmpty) {
-      await CommentService.createComment(
-        postId: widget.post.id,
-        content: text,
-        token: token,
-      );
+  final text = _controller.text.trim();
+  if (text.isNotEmpty) {
+    final ok = await CommentService.createComment(
+      postId: widget.post.id,
+      content: text,
+      token: token,
+    );
+
+    if (ok) {
+      // xoá nội dung TextField
       _controller.clear();
+
+      // gọi lại API để load danh sách mới
       setState(() {
         _loadComments();
       });
+
+      // báo thành công
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Gửi bình luận thành công!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      // báo lỗi
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Gửi bình luận thất bại, thử lại sau.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
+}
 
   Future<UserModel?> _getUser(String? uid) async {
     if (uid == null) return null;
@@ -100,7 +128,7 @@ class _CommentPageState extends State<CommentPage> {
                   itemBuilder: (context, index) {
                     final comment = comments[index];
                     return FutureBuilder<UserModel?>(
-                      future: _getUser(comment.uid),
+                      future: _getUser(comment.uid.toString()),
                       builder: (context, userSnapshot) {
                         final user = userSnapshot.data;
                         return ListTile(

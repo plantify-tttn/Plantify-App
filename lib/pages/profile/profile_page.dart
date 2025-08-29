@@ -7,7 +7,7 @@ import 'package:plantify/pages/profile/user_profile_page.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:plantify/theme/color.dart';
 import 'package:plantify/theme/theme_provider.dart';
-import 'package:plantify/viewmodel/user_vm.dart';
+import 'package:plantify/provider/user_vm.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 

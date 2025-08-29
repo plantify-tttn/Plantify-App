@@ -3,7 +3,7 @@ import 'package:plantify/models/user_model.dart';
 import 'package:plantify/services/auth_services/login_service.dart';
 import 'package:plantify/services/user_service.dart';
 
-class LoginVm extends ChangeNotifier{
+class LoginVm extends ChangeNotifier {
   final LoginService _loginService = LoginService();
   bool _canLogin = false;
   bool _isLogin = false;
@@ -23,47 +23,53 @@ class LoginVm extends ChangeNotifier{
   }
 
   bool get canLogin => _canLogin;
-  
-  void updateCan(){
-    _canLogin = _emailController.text.isNotEmpty && _passController.text.isNotEmpty;
+
+  void updateCan() {
+    _canLogin =
+        _emailController.text.isNotEmpty && _passController.text.isNotEmpty;
     notifyListeners();
   }
 
-  Future<bool> login() async {
+  Future<String> login() async {
     try {
       final result = await _loginService.login(
         email: emailController.text.trim(),
         password: passController.text,
       );
       final id = (result['id'] ?? 'currentUser');
-      final name  = (result['user'] ?? result['name'] ?? '').toString();
+      final name = (result['user'] ?? result['name'] ?? '').toString();
       final token = (result['access_token'] ?? '').toString();
       final imageUrl = (result['imageUrl'] as String?) ??
-        'https://cdn-icons-png.flaticon.com/512/8792/8792047.png';
-      var email = (result['email'] ?? '').toString();
+          'https://cdn-icons-png.flaticon.com/512/8792/8792047.png';
+      final _email;
+      if (token !='') {
+        _email = await UserService().getEmailByToken(token);
+      } else {
+        _email = (result['email'] ?? '').toString();
+      }
 
       final userModel = UserModel(
         id: id,
         name: name,
         imageUrl: imageUrl,
-        email: email,
+        email: _email,
         accessToken: token,
       );
       if (token.isEmpty || name.isEmpty) {
         _isLogin = false;
         notifyListeners();
-        return false;
+        return 'token hoac ten rong';
       }
 
-      // dùng hàm preserve token (như bạn đã thêm hiveUpsertUserPartial)
-      await UserService.hiveSaveUser(userModel); 
+      await UserService.hiveSaveUser(userModel);
+
       _isLogin = true;
       notifyListeners();
-      return true;
+      return 'ok';
     } catch (e) {
       _isLogin = false;
       notifyListeners();
-      return false;
+      return '$e';
     }
   }
 }

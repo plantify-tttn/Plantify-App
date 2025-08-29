@@ -9,13 +9,14 @@ import 'package:plantify/models/user_model.dart';
 
 class UserService {
   final String baseUrl = dotenv.env['BASE_URL'] ?? "";
+  final String _token = getToken();
 
   /// Lấy thông tin người dùng theo ID
   Future<UserModel> getUserById(String id) async {
     final box = Hive.box<UserModel>('userBox');
-    for (final key in box.keys) { 
-      final user = box.get(key); 
-      debugPrint('🔹 [$key] ${user?.name} | ${user?.email} | ${user?.id}'); 
+    for (final key in box.keys) {
+      final user = box.get(key);
+      debugPrint('🔹 [$key] ${user?.name} | ${user?.email} | ${user?.id}');
     }
     try {
       final user = hiveGetUserById(id);
@@ -33,6 +34,41 @@ class UserService {
     }
   }
 
+  Future<String> getEmailByToken(String token) async {
+    final url = Uri.parse('$baseUrl/auth/profile');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw Exception(
+          'Cập nhật thất bại: ${response.statusCode} ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['email'];
+  }
+  Future<String> getImagesByToken() async{
+    final url = Uri.parse('$baseUrl/auth/profile');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_token',
+      },
+    );
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw Exception(
+          'Cập nhật thất bại: ${response.statusCode} ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['imageUrl'];
+  }
+
   /// Lấy danh sách tất cả người dùng
   Future<List<UserModel>> getAllUsers() async {
     final url = Uri.parse('$baseUrl/auth/all-users');
@@ -42,9 +78,9 @@ class UserService {
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
       final List list =
           decoded is List ? decoded : (decoded['users'] as List? ?? const []);
-          return list
-              .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
-              .toList();
+      return list
+          .map((e) => UserModel.fromJson(e as Map<String, dynamic>))
+          .toList();
     } else {
       throw Exception('Lỗi khi lấy danh sách người dùng');
     }
@@ -75,7 +111,8 @@ class UserService {
   }
 
   Future<String> uploadAvatar(File file, {String? token}) async {
-    final uri = Uri.parse('$baseUrl/files/upload'); // đổi endpoint theo BE của bạn
+    final uri =
+        Uri.parse('$baseUrl/files/upload'); // đổi endpoint theo BE của bạn
     final req = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath(
         'avatar', // đổi 'avatar' đúng tên field file trên BE
@@ -83,7 +120,7 @@ class UserService {
         filename: p.basename(file.path),
       ));
 
-    final t = token ?? UserService.getToken();
+    final t = token ?? _token;
     if (t.isNotEmpty) {
       req.headers['Authorization'] = 'Bearer $t';
     }
@@ -100,70 +137,82 @@ class UserService {
 
   /// Cập nhật profile (không gửi accessToken trong body)
   Future<UserModel> updateProfile({
-    required String id,
-    required String name,
-    required String email,
-    required String imageUrl,
-    String? token,
+    required String token,
+    String? name,
+    String? email,
+    File? file,
   }) async {
-    final url = Uri.parse('$baseUrl/user/upload/$id');
-    final t = token ?? UserService.getToken();
+    final url = Uri.parse('$baseUrl/auth/update-profile');
+    http.Response res;
 
-    final response = await http.put(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $t',
-      },
-      body: jsonEncode({
-        'name': name,
-        'email': email,
-        'imageUrl': imageUrl,
-      }),
-    );
+    if (file != null) {
+      // ===== Multipart (có file) =====
+      final req = http.MultipartRequest('PUT', url);
 
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception('Cập nhật thất bại: ${response.statusCode} ${response.body}');
+      if (name != null && name.isNotEmpty) req.fields['name'] = name;
+      if (email != null && email.isNotEmpty) req.fields['email'] = email;
+
+      // Tên field file đổi cho đúng với BE (vd: 'avatar' / 'image' / 'file')
+      req.files.add(
+        await http.MultipartFile.fromPath(
+          'image',
+          file.path,
+          filename: p.basename(file.path),
+        ),
+      );
+
+      req.headers['Authorization'] = 'Bearer $token';
+      req.headers['Accept'] = 'application/json';
+
+      final streamed = await req.send();
+      res = await http.Response.fromStream(streamed);
+    } else {
+      // ===== JSON (không có file) =====
+      final body = <String, dynamic>{};
+      if (name != null && name.isNotEmpty) body['name'] = name;
+      if (email != null && email.isNotEmpty) body['email'] = email;
+
+      res = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
     }
 
-    final data = jsonDecode(response.body);
-    // tuỳ BE trả về { user: {...} } hay trả thẳng user
-    final userJson = Map<String, dynamic>.from(data['user'] ?? data);
-    final user = UserModel.fromJson(userJson);
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('Cập nhật thất bại: ${res.statusCode} ${res.body}');
+    }
+    final imageUrl = await getEmailByToken(token);
 
-    await UserService.hiveUpsertUserPartial(
-      id: user.id,
-      name: user.name,
-      imageUrl: user.imageUrl,
-      email: user.email,
-      accessToken: t, // lưu token mới nếu có
+    await hiveUpsertUserPartial(
+      name: name,
+      imageUrl: imageUrl,
+      email: email,
+      accessToken: token, // lưu token mới nếu có
     ); // đồng bộ lại Hive
-    return user;
+    final user = hiveGetUser();
+    return user!;
   }
 
   /// One-shot: nếu có chọn ảnh mới -> upload, rồi update profile
   Future<UserModel> updateProfileWithOptionalAvatar({
-    required UserModel current,
-    required String name,
-    required String email,
+    String? name,
+    String? email,
     File? newAvatar,
   }) async {
-    String imageUrl = current.imageUrl;
-
-    if (newAvatar != null) {
-      imageUrl = await uploadAvatar(newAvatar); // sẽ tự lấy token từ Hive
-    }
+    final token = _token;
 
     return await updateProfile(
-      id: current.id,
+      token: token,
       name: name,
       email: email,
-      imageUrl: imageUrl,
+      file: newAvatar,
     );
   }
-
-
-
 
   static const String _boxName = 'userBox';
   static const String _userKey = 'currentUser';
@@ -179,7 +228,6 @@ class UserService {
     await box.put(user.id.toString(), user);
   }
 
-
   static Future<void> hiveSaveUserById(UserModel user) async {
     final box = Hive.box<UserModel>('userBox');
     await box.put(user.id, user); // key là user.id
@@ -190,6 +238,7 @@ class UserService {
     final box = Hive.box<UserModel>(_boxName);
     return box.get(_userKey);
   }
+
   static UserModel? hiveGetUserById(String userId) {
     final box = Hive.box<UserModel>('userBox');
     try {
@@ -215,7 +264,7 @@ class UserService {
   static String getToken() {
     final box = Hive.box<UserModel>(_boxName);
     final user = box.get(_userKey);
-    
+
     if (user != null && user.accessToken.isNotEmpty) {
       return user.accessToken;
     } else {

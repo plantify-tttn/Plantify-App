@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:plantify/models/post_model.dart';
 import 'package:plantify/pages/posts/post_layout.dart';
 import 'package:plantify/provider/post_provider.dart';
-import 'package:plantify/services/post_service.dart';
 import 'package:provider/provider.dart';
 
-class PostList extends StatefulWidget {
-  const PostList({super.key});
+class UserPostList extends StatefulWidget {
+  const UserPostList({super.key});
 
   @override
-  State<PostList> createState() => _PostListState();
+  State<UserPostList> createState() => _UserPostListState();
 }
 
-class _PostListState extends State<PostList> {
+class _UserPostListState extends State<UserPostList> {
+   @override
+  void initState() {
+    super.initState();
+    // Defer to post-frame so notifyListeners won't run during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<PostProvider>().getUPosts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PostProvider>(
@@ -21,9 +29,9 @@ class _PostListState extends State<PostList> {
           physics: NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           padding: EdgeInsets.zero,
-          itemCount: postProvider.listedPost.length + (postProvider.isLoadingMore || !postProvider.hasMore ? 1 : 0),
+          itemCount: postProvider.ulistedPost.length,
           itemBuilder: (context, index){
-            final len = postProvider.listedPost.length;
+            final len = postProvider.ulistedPost.length;
             if (index == len) {
               if (postProvider.isLoadingMore) {
                 return CircularProgressIndicator();
@@ -35,7 +43,7 @@ class _PostListState extends State<PostList> {
                 );
               }
             }
-            final post = postProvider.listedPost[index];
+            final post = postProvider.ulistedPost[index];
             return PostLayout(post: post,);
           }
         );

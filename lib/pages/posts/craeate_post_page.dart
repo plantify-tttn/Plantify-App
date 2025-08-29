@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:plantify/apps/router/router.dart';
+import 'package:plantify/provider/post_provider.dart';
+import 'package:plantify/services/post_service.dart';
+import 'package:plantify/services/user_service.dart';
 import 'package:plantify/theme/color.dart';
 
 class CreatePostPage extends StatefulWidget {
@@ -16,7 +20,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final TextEditingController _contentController = TextEditingController();
   final _picker = ImagePicker();
   final int _maxChars = 500;
-
+  final PostProvider postProvider = PostProvider();
   File? _imageFile;
   bool _submitting = false;
 
@@ -108,43 +112,76 @@ class _CreatePostPageState extends State<CreatePostPage> {
   setState(() => _submitting = true);
 
   try {
-    // 🟢 Gọi API tạo post
-    // final res = await PostService().createPost(
-    //   content: content,
-    //   image: _imageFile, // nếu không chọn ảnh thì sẽ là null
-    // );
-
-    // //print("✅ Post created: $res");
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                local.postSuccess,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
+    //🟢 Gọi API tạo post
+    final token = UserService.getToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('Missing token');
+    }
+    if (_imageFile != null) {
+      postProvider.craetePost(content: content, image: _imageFile!);
+      // await PostService().createPost(
+      //   content: content,
+      //   image: _imageFile!,
+      //   token: token,
+      // );
+      if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    local.postSuccess,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating, // nổi lên trên, không dính sát mép dưới
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        duration: const Duration(seconds: 2), // tự ẩn sau 2s
-        elevation: 4,
-      ),
-    );
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating, // nổi lên trên, không dính sát mép dưới
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            duration: const Duration(seconds: 2), // tự ẩn sau 2s
+            elevation: 4,
+          ),
+        );
 
-    _contentController.clear();
-    setState(() => _imageFile = null);
-    context.pop();
+        _contentController.clear();
+        setState(() => _imageFile = null);
+        context.pop();
+    } else{
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Bạn chưa chọn ảnh',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color.fromARGB(255, 160, 67, 67),
+            behavior: SnackBarBehavior.floating, // nổi lên trên, không dính sát mép dưới
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            duration: const Duration(seconds: 2), // tự ẩn sau 2s
+            elevation: 4,
+          ),
+        );
+    }
+    //print("✅ Post created: $res");
+
+    
 
   } catch (e) {
     if (!mounted) return;

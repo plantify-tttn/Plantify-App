@@ -8,21 +8,28 @@ class CommentService {
 
   /// Lấy danh sách comment của bài post
   static Future<List<CommentModel>> getComments(String postId, String token) async {
-    final res = await http.get(
-      Uri.parse('$baseUrl/comment/post/$postId'),
+    final url = Uri.parse('$baseUrl/comment/$postId'); // <-- KHỚP Postman
+    try{
+      final res = await http.get(
+      url,
       headers: {
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
       },
     );
 
-    if (res.statusCode == 200) {
-      final List data = jsonDecode(res.body);
-     // print("==============$data"); // 👈 In ra dữ liệu để debug
-      return data.map((e) => CommentModel.fromJson(e)).toList();
+    if (res.statusCode == 200 || res.statusCode == 201 ) {
+      final root = jsonDecode(res.body) as Map<String, dynamic>;
+      final list = (root['data'] as List?) ?? const [];
+      return list.map((e) => CommentModel.fromJson(e as Map<String, dynamic>)).toList();
     } else {
-     // print("=============="); // 👈 In ra dữ liệu để debug
-      throw Exception("❌ Lỗi khi lấy comment: ${res.statusCode}");
+      // Log để debug
+      print('[getComments] ${res.statusCode} ${res.body}');
+      throw Exception('Lỗi khi lấy comment: ${res.statusCode}');
+    }
+    }catch(e){
+      print('===coment $e');
+      return[];
     }
   }
 
@@ -32,18 +39,26 @@ class CommentService {
     required String content,
     required String token,
   }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/comment'),
+    try{
+      final res = await http.patch(
+      Uri.parse('$baseUrl/comment/$postId'),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
       },
       body: jsonEncode({
-        "postId": postId,
         "content": content,
       }),
     );
-
-    return res.statusCode == 201; // hoặc 200 tùy backend
+    print('=== okiiiii');
+    if(res.statusCode == 201 || res.statusCode == 200){
+      return true;
+    }else{
+      return false;
+    }
+    }catch(e){
+      print('==== createcommet $e');
+      return false;
+    }
   }
 }

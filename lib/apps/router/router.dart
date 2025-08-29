@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
+import 'package:plantify/models/disease_model.dart';
 import 'package:plantify/models/plants_model.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/pages/comment/comment_page.dart';
+import 'package:plantify/pages/diseases/diseases_page.dart';
 import 'package:plantify/pages/home/home_center.dart';
 import 'package:plantify/pages/login/login_page.dart';
 import 'package:plantify/pages/plants/plant_detail_page.dart';
@@ -12,9 +14,9 @@ import 'package:plantify/pages/posts/craete_post.dart';
 import 'package:plantify/pages/register/register_page.dart';
 import 'package:plantify/pages/search/search_page.dart';
 import 'package:plantify/pages/welcome/welcome_page.dart';
-import 'package:plantify/viewmodel/login_vm.dart';
-import 'package:plantify/viewmodel/register_vm.dart';
-import 'package:plantify/viewmodel/search_vm.dart';
+import 'package:plantify/provider/login_vm.dart';
+import 'package:plantify/provider/register_vm.dart';
+import 'package:plantify/provider/search_vm.dart';
 import 'package:provider/provider.dart';
 
 class RouterCustom {
@@ -92,6 +94,14 @@ class RouterCustom {
                 builder: (BuildContext context, GoRouterState state) {
                   final plant = state.extra as PlantModel;
                   return PlantDetailPage(plant: plant);
+                },
+              ),
+              GoRoute(
+                path: '/detailDisease',
+                name: RouterName.detailDisease,
+                builder: (BuildContext context, GoRouterState state) {
+                  final disease = state.extra as DiseaseModel;
+                  return DiseasesPage(disease: disease);
                 },
               ),
             ]
