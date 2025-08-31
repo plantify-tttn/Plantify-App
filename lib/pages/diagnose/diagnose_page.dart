@@ -131,10 +131,11 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = message.isUser;
     final bg = isUser ? const Color(0xff156a3a) : const Color(0xff1b2430);
+    final sending = context.watch<DiagnoseProvider>().sending;
 
-    Widget child;
+    Widget mainChild;
     if (message.image != null) {
-      child = ClipRRect(
+      mainChild = ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: GestureDetector(
           onTap: () {
@@ -158,10 +159,47 @@ class _Bubble extends StatelessWidget {
         ),
       );
     } else {
-      child = SelectableText(
+      // Text + optional quick replies
+      final textWidget = SelectableText(
         message.text ?? '',
         style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.4),
       );
+
+      final hasOptions = (message.options?.isNotEmpty ?? false);
+
+      if (hasOptions && !isUser) {
+        final optionsWrap = Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: message.options!
+                .map(
+                  (opt) => ActionChip(
+                    label: Text(
+                      opt,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: const Color(0xff263141),
+                    onPressed: sending
+                        ? null
+                        : () {
+                            // gửi option như một câu hỏi mới
+                            context.read<DiagnoseProvider>().sendText(opt);
+                          },
+                  ),
+                )
+                .toList(),
+          ),
+        );
+
+        mainChild = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [textWidget, optionsWrap],
+        );
+      } else {
+        mainChild = textWidget;
+      }
     }
 
     return Container(
@@ -178,7 +216,7 @@ class _Bubble extends StatelessWidget {
           bottomRight: Radius.circular(isUser ? 4 : 14),
         ),
       ),
-      child: child,
+      child: mainChild,
     );
   }
 }

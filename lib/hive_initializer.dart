@@ -1,4 +1,5 @@
 import 'package:hive_flutter/adapters.dart';
+import 'package:plantify/models/chat_message.dart';
 import 'package:plantify/models/comment_model.dart';
 import 'package:plantify/models/disease_model.dart';
 import 'package:plantify/models/plants_model.dart';
@@ -20,6 +21,7 @@ Future<void> initHive() async {
     () => Hive.registerAdapter(PlantModelAdapter()),
     () => Hive.registerAdapter(CommentModelAdapter()),
     () => Hive.registerAdapter(DiseaseModelAdapter()),
+    () => Hive.registerAdapter(ChatMessageAdapter())
     // () => Hive.registerAdapter(DiseaseModelAdapter()),
   ];
 
@@ -34,7 +36,8 @@ Future<void> initHive() async {
     () => Hive.openBox<PlantModel>('plants'),
     () => Hive.openBox<CommentModel>('comments'),
     () => Hive.openBox<DiseaseModel>('diseases'),
-    () => Hive.openBox<String>('favourites')
+    () => Hive.openBox<String>('favourites'),
+    () => Hive.openBox<ChatMessage>("diagnose_messages")
     // () => Hive.openBox<DiseaseModel>('diseaseBox'),
   ];
 

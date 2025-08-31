@@ -14,7 +14,6 @@ class DiagnoseService {
 
   Future<Map<String, dynamic>> sendText(String text, String token) async {
     final url = Uri.parse('$baseUrl/chatbot');
-
     try {
       final response = await http
           .post(
@@ -22,7 +21,6 @@ class DiagnoseService {
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              // cần cho ngrok
               'ngrok-skip-browser-warning': 'true',
               if (token.isNotEmpty) 'Authorization': 'Bearer $token',
             },
@@ -32,18 +30,18 @@ class DiagnoseService {
 
       final isOk = response.statusCode == 201;
 
-      // cố gắng parse JSON, nếu không được thì trả raw body
       Map<String, dynamic>? data;
       try {
         data = jsonDecode(response.body) as Map<String, dynamic>;
       } catch (_) {}
 
       if (isOk) {
+        final formatted = formatChatbotReply(data ?? const {});
         return {
           'success': true,
           'data': data ?? <String, dynamic>{'raw': response.body},
-          // gộp text hiển thị luôn cho tiện dùng ở UI (nếu muốn)
-          'display': data == null ? response.body : formatChatbotReply(data),
+          'display': formatted['text'] as String,           // <-- text hiển thị
+          'options': formatted['options'] as List<String>,  // <-- quick replies
         };
       } else {
         return {
@@ -63,6 +61,41 @@ class DiagnoseService {
     } catch (e) {
       return {'success': false, 'message': 'Lỗi không xác định: $e'};
     }
+  }
+
+  /// Trả về: { 'text': String, 'options': List<String> }
+  Map<String, Object> formatChatbotReply(Map<String, dynamic> data) {
+    final answer = data['answer']?.toString();
+    final detail = data['detail']?.toString();
+    final suggest = data['suggest']?.toString();
+    final nextQ = data['next_question']; // có thể là String hoặc List
+
+    final buf = StringBuffer();
+    if ((answer ?? '').isNotEmpty) buf.writeln('🩺 $answer');
+    if ((detail ?? '').isNotEmpty) buf.writeln('• $detail');
+    if ((suggest ?? '').isNotEmpty) buf.writeln('• $suggest');
+
+    // --- Parse next questions robustly ---
+    List<String> options = [];
+    if (nextQ != null) {
+      if (nextQ is List) {
+        options = nextQ.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
+      } else if (nextQ is String) {
+        // chấp nhận phân tách bởi |, , hoặc xuống dòng
+        options = nextQ
+            .split(RegExp(r'\n|,|\|'))
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    }
+
+    if (options.isNotEmpty) {
+      buf.writeln('🤖 Bạn có thể hỏi tiếp:');
+    }
+
+    final textOut = buf.isEmpty ? 'Đã nhận phản hồi.' : buf.toString().trim();
+    return {'text': textOut, 'options': options};
   }
 
   Future<Map<String, dynamic>> sendImage(
@@ -110,18 +143,4 @@ class DiagnoseService {
     }
   }
 
-  String formatChatbotReply(Map<String, dynamic> data) {
-    final answer = data['answer']?.toString();
-    final detail = data['detail']?.toString();
-    final suggest = data['suggest']?.toString();
-    final nextQ = data['next_question']?.toString();
-
-    final buf = StringBuffer();
-    if ((answer ?? '').isNotEmpty) buf.writeln('🩺 $answer');
-    if ((detail ?? '').isNotEmpty) buf.writeln('• $detail');
-    if ((suggest ?? '').isNotEmpty) buf.writeln('• $suggest');
-    if ((nextQ ?? '').isNotEmpty) buf.writeln('🤖 $nextQ');
-
-    return buf.isEmpty ? 'Đã nhận phản hồi.' : buf.toString().trim();
-  }
 }
