@@ -10,7 +10,7 @@ Future<void> initHive() async {
   await Hive.openBox('settings');
 
   // await Hive.deleteBoxFromDisk('posts');
-  // await Hive.deleteBoxFromDisk('comments');
+  // await Hive.deleteBoxFromDisk('favourites');
 
 
   // Đăng ký Adapter
@@ -33,7 +33,8 @@ Future<void> initHive() async {
     () => Hive.openBox<PostModel>('posts'),
     () => Hive.openBox<PlantModel>('plants'),
     () => Hive.openBox<CommentModel>('comments'),
-    () => Hive.openBox<DiseaseModel>('diseases')
+    () => Hive.openBox<DiseaseModel>('diseases'),
+    () => Hive.openBox<String>('favourites')
     // () => Hive.openBox<DiseaseModel>('diseaseBox'),
   ];
 

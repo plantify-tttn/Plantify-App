@@ -31,13 +31,15 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
       seasonEN: fields[11] as String,
       note: fields[12] as String,
       noteEn: fields[13] as String,
+      seed: fields[14] as String,
+      seedEn: fields[15] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, PlantModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -65,7 +67,11 @@ class PlantModelAdapter extends TypeAdapter<PlantModel> {
       ..writeByte(12)
       ..write(obj.note)
       ..writeByte(13)
-      ..write(obj.noteEn);
+      ..write(obj.noteEn)
+      ..writeByte(14)
+      ..write(obj.seed)
+      ..writeByte(15)
+      ..write(obj.seedEn);
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/provider/post_provider.dart';
 import 'package:plantify/provider/user_vm.dart';
+import 'package:plantify/services/user_service.dart';
 import 'package:provider/provider.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -19,22 +20,49 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   void initState() {
     super.initState();
-    _bootstrap(); // KHÔNG await trong initState
+    // Tránh navigate ngay trong initState: schedule sau frame đầu tiên
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
   }
 
   Future<void> _bootstrap() async {
     try {
-      await context.read<UserVm>().getAllUsers(); // ✅ đợi xong
+      // 1) Lấy token mềm từ Hive
+      final user = UserService.hiveGetUser();
+      final token = user?.accessToken ?? '';
+      await context.read<UserVm>().getAllUsers();
       await context.read<PostProvider>().getPosts();
-    } catch (e, s) {
-      debugPrint('❌ getAllUsers error: $e\n$s');
-      // TODO: showSnackBar / hiển thị lỗi nếu cần
-    }
 
-    if (!mounted || _didNavigate) return;
-    _didNavigate = true;
-    context.goNamed(RouterName.login); // ✅ chỉ chạy sau khi await xong
+      // 2) Check local exp
+      if (token.isEmpty || JwtUtil.isExpired(token)) {
+        await UserService.hiveDeleteUser(); // optional
+        if (!mounted || _didNavigate) return;
+        _didNavigate = true;
+        context.goNamed(RouterName.login);
+        return;
+      }
+
+      // 3) Confirm với server (phòng revoke)
+      final ok = await JwtUtil.validateRemote(token);
+      if (!ok) {
+        await UserService.hiveDeleteUser(); // optional
+        if (!mounted || _didNavigate) return;
+        _didNavigate = true;
+        context.goNamed(RouterName.login);
+        return;
+      }
+
+      // 5) Điều hướng vào home
+      if (!mounted || _didNavigate) return;
+      _didNavigate = true;
+      context.goNamed(RouterName.home); // hoặc RouterName.homeCenter
+    } catch (e, s) {
+      debugPrint('❌ bootstrap error: $e\n$s');
+      if (!mounted || _didNavigate) return;
+      _didNavigate = true;
+      context.goNamed(RouterName.login);
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -42,9 +70,9 @@ class _WelcomePageState extends State<WelcomePage> {
       extendBodyBehindAppBar: true,
       body: Center(
         child: SvgPicture.asset(
-          isDark 
-          ? 'assets/icons/logo_welcome_dark.svg'
-          : 'assets/icons/logo_welcome.svg'
+          isDark
+              ? 'assets/icons/logo_welcome_dark.svg'
+              : 'assets/icons/logo_welcome.svg',
         ),
       ),
     );

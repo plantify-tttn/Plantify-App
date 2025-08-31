@@ -14,137 +14,158 @@ class PlantDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(plant.localizedName(locale)),
-        leading: IconButton(
-          onPressed: (){
-            context.pop();
-          }, 
-          icon: Icon(Icons.arrow_back)
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(plant.localizedName(locale)),
+          leading: IconButton(
+            onPressed: (){
+              context.pop();
+            }, 
+            icon: Icon(Icons.arrow_back)
+          ),
+          actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: 'Change Language',
+            onPressed: () {
+              final localeProvider = context.read<LocaleProvider>();
+              final isVietnamese = locale.languageCode == 'vi';
+      
+              localeProvider.setLocale(Locale(isVietnamese ? 'en' : 'vi'));
+            },
+          ),
+        ],
         ),
-        actions: [
-        IconButton(
-          icon: const Icon(Icons.language),
-          tooltip: 'Change Language',
-          onPressed: () {
-            final localeProvider = context.read<LocaleProvider>();
-            final isVietnamese = locale.languageCode == 'vi';
-
-            localeProvider.setLocale(Locale(isVietnamese ? 'en' : 'vi'));
-          },
-        ),
-      ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (plant.images.isNotEmpty)
-              ImageCarousel(imageUrls: plant.images),
-
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🌿${AppLocalizations.of(context)!.overview}",
-                style: TextStyle(
-                  color: Color(MyColor.pr1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (plant.images.isNotEmpty)
+                ImageCarousel(imageUrls: plant.images),
+      
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🌿${AppLocalizations.of(context)!.overview}",
+                  style: TextStyle(
+                    color: Color(MyColor.pr1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                plant.localizedOverview(locale),
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  fontSize: 16, 
-                  height: 1.6,
+              if (plant.localizedSeed(locale).isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "🌰 ${AppLocalizations.of(context)!.seed}", // cần key 'seed' trong l10n
+                    style: TextStyle(
+                      color: Color(MyColor.pr1),
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                _buildHighlightBox(
+                  plant.localizedSeed(locale),
+                  icon: Icons.spa, // or Icons.grass
+                  backgroundColor: Colors.teal.shade100,
+                ),
+              ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  plant.localizedOverview(locale),
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
+                    fontSize: 16, 
+                    height: 1.6,
+                  ),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // 🌱 CHARACTERISTICS
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🌱 ${AppLocalizations.of(context)!.characteristics}",
-                style: TextStyle(
-                  color: Color(MyColor.pr1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+      
+              const SizedBox(height: 20),
+      
+              // 🌱 CHARACTERISTICS
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🌱 ${AppLocalizations.of(context)!.characteristics}",
+                  style: TextStyle(
+                    color: Color(MyColor.pr1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildKeyValueCards(
-              plant.localizedCharacteristics(locale),
-              Colors.green.shade100,
-              section: 'characteristics',
-              context: context,
-            ),
-
-            // 🧑‍🌾 CULTIVATION
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🧑‍🌾 ${AppLocalizations.of(context)!.cultivation}",
-                style: TextStyle(
-                  color: Color(MyColor.pr1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              _buildKeyValueCards(
+                plant.localizedCharacteristics(locale),
+                Colors.green.shade100,
+                section: 'characteristics',
+                context: context,
+              ),
+      
+              // 🧑‍🌾 CULTIVATION
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🧑‍🌾 ${AppLocalizations.of(context)!.cultivation}",
+                  style: TextStyle(
+                    color: Color(MyColor.pr1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildKeyValueCards(
-              plant.localizedCultivation(locale),
-              Colors.brown.shade100,
-              section: 'cultivation',
-              context: context,
-            ),
-
-            // ☀️ SEASON
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "☀️ ${AppLocalizations.of(context)!.season}",
-                style: TextStyle(
-                  color: Color(MyColor.pr1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              _buildKeyValueCards(
+                plant.localizedCultivation(locale),
+                Colors.brown.shade100,
+                section: 'cultivation',
+                context: context,
+              ),
+      
+              // ☀️ SEASON
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "☀️ ${AppLocalizations.of(context)!.season}",
+                  style: TextStyle(
+                    color: Color(MyColor.pr1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildHighlightBox(
-              plant.localizedSeason(locale),
-              icon: Icons.calendar_month,
-              backgroundColor: Colors.orange.shade100,
-            ),
-
-            // 📝 NOTE
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "📝 ${AppLocalizations.of(context)!.note}",
-                style: TextStyle(
-                  color: Color(MyColor.pr1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              _buildHighlightBox(
+                plant.localizedSeason(locale),
+                icon: Icons.calendar_month,
+                backgroundColor: Colors.orange.shade100,
+              ),
+      
+              // 📝 NOTE
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "📝 ${AppLocalizations.of(context)!.note}",
+                  style: TextStyle(
+                    color: Color(MyColor.pr1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildHighlightBox(
-              plant.localizedNote(locale),
-              icon: Icons.info_outline,
-              backgroundColor: Colors.blue.shade100,
-            ),
-
-            const SizedBox(height: 30),
-          ],
+              _buildHighlightBox(
+                plant.localizedNote(locale),
+                icon: Icons.info_outline,
+                backgroundColor: Colors.blue.shade100,
+              ),
+      
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
       ),
     );

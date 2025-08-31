@@ -118,8 +118,8 @@ class DiagnoseService {
 
     final buf = StringBuffer();
     if ((answer ?? '').isNotEmpty) buf.writeln('🩺 $answer');
-    if ((detail ?? '').isNotEmpty) buf.writeln('• Chi tiết: $detail');
-    if ((suggest ?? '').isNotEmpty) buf.writeln('• Gợi ý: $suggest');
+    if ((detail ?? '').isNotEmpty) buf.writeln('• $detail');
+    if ((suggest ?? '').isNotEmpty) buf.writeln('• $suggest');
     if ((nextQ ?? '').isNotEmpty) buf.writeln('🤖 $nextQ');
 
     return buf.isEmpty ? 'Đã nhận phản hồi.' : buf.toString().trim();

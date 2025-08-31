@@ -17,50 +17,40 @@ class PostMain extends StatefulWidget {
 class _PostMainState extends State<PostMain> {
   bool isLoved = false;
   int loveCount = 0;
+  int commentCount = 0;     
   String token = '';
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    loveCount = widget.post.loveCount;
-    _initLoveStatus();
+    loveCount = widget.post.likeCount;
+    token = UserService.getToken();
+    // tô màu lúc load theo Hive
+    isLoved = FavouriteLocal.isLoved(widget.post.id);
+    commentCount = widget.post.commentCount;
   }
 
-  Future<void> _initLoveStatus() async {
-    try {
-      token = UserService.getToken();
+  Future<void> _toggle() async {
+    if (_busy) return;
+    setState(() => _busy = true);
 
-      final List<String> favorites = await FavoriteService.getFavorites(token);
+    final before = isLoved;
+    final after = await FavoriteService.toggleByResponse(widget.post.id, token);
 
+    if (after != null) {
       setState(() {
-        isLoved = favorites.contains(widget.post.id);
+        isLoved = after;                       // icon color
+        if (after != before) {
+          loveCount += after ? 1 : -1;         // counter
+          if (loveCount < 0) loveCount = 0;
+        }
+        _busy = false;
       });
-    } catch (e) {
-      //print('❌ Lỗi khi tải trạng thái love: $e');
-    }
-  }
-
-  Future<void> toggleLove() async {
-    try {
-      if (isLoved) {
-        final success = await FavoriteService.removeFavorite(widget.post.id, token);
-        if (success) {
-          setState(() {
-            isLoved = false;
-            loveCount--;
-          });
-        }
-      } else {
-        final success = await FavoriteService.addFavorite(widget.post.id, token);
-        if (success) {
-          setState(() {
-            isLoved = true;
-            loveCount++;
-          });
-        }
-      }
-    } catch (e) {
-      //print("❌ Lỗi khi toggle love: $e");
+    } else {
+      // request failed -> không đổi trạng thái
+      setState(() => _busy = false);
+      // optionally show SnackBar here
     }
   }
 
@@ -98,31 +88,37 @@ class _PostMainState extends State<PostMain> {
           children: [
             // ❤️ Love
             Expanded(
-              child: GestureDetector(
-                onTap: toggleLove,
-                child: statusButton(
-                  Icon(
-                    isLoved ? Icons.favorite : Icons.favorite_border,
-                    color: isLoved ? Colors.red : Colors.grey,
-                  ),
-                  loveCount,
-                  AppLocalizations.of(context)!.love,
-                ),
+          child: GestureDetector(
+            onTap: _busy ? null : _toggle,
+            child: statusButton(
+              Icon(
+                isLoved ? Icons.favorite : Icons.favorite_border,
+                color: isLoved ? Colors.red : Colors.grey,
               ),
+              loveCount,
+              AppLocalizations.of(context)!.love,
             ),
+          ),
+        ),
+
 
             // 💬 Comment
             Expanded(
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (_) => CommentPage(post: widget.post))
-                  );
+                onTap: () async {
+                  final added = await Navigator.push<int>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CommentPage(post: widget.post),
+                  ),
+                );
+                if (added != null && added > 0 && mounted) {
+                  setState(() => commentCount += added); // ✅ update
+                }
                 },
                 child: statusButton(
                   const Icon(Icons.chat_bubble, color: Color.fromARGB(255, 159, 217, 173)),
-                  widget.post.commentCount,
+                  commentCount,
                   AppLocalizations.of(context)!.comment,
                 ),
               ),

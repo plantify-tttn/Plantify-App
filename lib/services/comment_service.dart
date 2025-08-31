@@ -40,14 +40,15 @@ class CommentService {
     required String token,
   }) async {
     try{
-      final res = await http.patch(
-      Uri.parse('$baseUrl/comment/$postId'),
+      final res = await http.post(
+      Uri.parse('$baseUrl/comment'),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json",
       },
       body: jsonEncode({
         "content": content,
+        "postId": postId
       }),
     );
     print('=== okiiiii');

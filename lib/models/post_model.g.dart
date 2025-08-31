@@ -21,16 +21,17 @@ class PostModelAdapter extends TypeAdapter<PostModel> {
       userid: fields[1] as String,
       content: fields[2] as String,
       imageurl: fields[3] as String,
-      loveCount: fields[4] as int,
+      likeCount: fields[4] as int,
       commentCount: fields[5] as int,
       created_at: fields[6] as String,
+      username: fields[7] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, PostModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -40,11 +41,13 @@ class PostModelAdapter extends TypeAdapter<PostModel> {
       ..writeByte(3)
       ..write(obj.imageurl)
       ..writeByte(4)
-      ..write(obj.loveCount)
+      ..write(obj.likeCount)
       ..writeByte(5)
       ..write(obj.commentCount)
       ..writeByte(6)
-      ..write(obj.created_at);
+      ..write(obj.created_at)
+      ..writeByte(7)
+      ..write(obj.username);
   }
 
   @override

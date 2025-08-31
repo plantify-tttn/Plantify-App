@@ -18,8 +18,9 @@ class _CommentPageState extends State<CommentPage> {
   late Future<List<CommentModel>> _commentsFuture;
   late String token;
 
-  // Cache user info để tránh gọi lại nhiều lần
   final Map<String, UserModel?> _userCache = {};
+  int _addedCount = 0; // ✅ đếm số comment mới
+  bool _sending = false;
 
   @override
   void initState() {
@@ -32,55 +33,10 @@ class _CommentPageState extends State<CommentPage> {
     _commentsFuture = CommentService.getComments(widget.post.id, token);
   }
 
-  Future<void> _addComment() async {
-  final text = _controller.text.trim();
-  if (text.isNotEmpty) {
-    final ok = await CommentService.createComment(
-      postId: widget.post.id,
-      content: text,
-      token: token,
-    );
-
-    if (ok) {
-      // xoá nội dung TextField
-      _controller.clear();
-
-      // gọi lại API để load danh sách mới
-      setState(() {
-        _loadComments();
-      });
-
-      // báo thành công
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Gửi bình luận thành công!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } else {
-      // báo lỗi
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Gửi bình luận thất bại, thử lại sau.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-}
-
   Future<UserModel?> _getUser(String? uid) async {
-    if (uid == null) return null;
-    if (_userCache.containsKey(uid)) {
-      return _userCache[uid];
-    }
-    // Kiểm tra cache Hive trước
+    if (uid == null || uid.isEmpty) return null;
+    if (_userCache.containsKey(uid)) return _userCache[uid];
+
     final cached = UserService.hiveGetUserById(uid);
     if (cached != null) {
       _userCache[uid] = cached;
@@ -95,78 +51,127 @@ class _CommentPageState extends State<CommentPage> {
     }
   }
 
+  Future<void> _addComment() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || _sending) return;
+
+    setState(() => _sending = true);
+    final ok = await CommentService.createComment(
+      postId: widget.post.id,
+      content: text,
+      token: token,
+    );
+
+    if (!mounted) return;
+    if (ok) {
+      _controller.clear();
+      FocusScope.of(context).unfocus(); // đóng bàn phím
+      _addedCount++;
+      setState(_loadComments); // reload list
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Gửi bình luận thành công!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('❌ Gửi bình luận thất bại')),
+      );
+    }
+    setState(() => _sending = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bình luận'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(widget.post.content, style: const TextStyle(fontSize: 18)),
+    return WillPopScope(
+      // ✅ trả result khi back (swipe/back)
+      onWillPop: () async {
+        Navigator.pop(context, _addedCount);
+        return false;
+      },
+      child: SafeArea(
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Bình luận'),
+            leading: IconButton(
+              // ✅ back button cũng trả result
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context, _addedCount),
+            ),
           ),
-          const Divider(),
-          Expanded(
-            child: FutureBuilder<List<CommentModel>>(
-              future: _commentsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                 // print('❌ Lỗi FutureBuilder: ${snapshot.error}');
-                  return const Center(child: Text('Lỗi khi tải bình luận.'));
-                }
-                final comments = snapshot.data ?? [];
-                if (comments.isEmpty) {
-                  return const Center(child: Text('Chưa có bình luận nào.'));
-                }
-                return ListView.builder(
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = comments[index];
-                    return FutureBuilder<UserModel?>(
-                      future: _getUser(comment.uid.toString()),
-                      builder: (context, userSnapshot) {
-                        final user = userSnapshot.data;
-                        return ListTile(
-                          leading: user?.imageUrl != null && user!.imageUrl.isNotEmpty
-                              ? CircleAvatar(backgroundImage: NetworkImage(user.imageUrl))
-                              : const CircleAvatar(child: Icon(Icons.person)),
-                          title: Text(comment.content, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 17)),
-                          subtitle: Text(user?.name ?? 'Không rõ', style: const TextStyle(fontSize: 14)),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(widget.post.content,
+                    style: const TextStyle(fontSize: 18)),
+              ),
+              const Divider(),
+              Expanded(
+                child: FutureBuilder<List<CommentModel>>(
+                  future: _commentsFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      // print('❌ Lỗi FutureBuilder: ${snapshot.error}');
+                      return const Center(child: Text('Lỗi khi tải bình luận.'));
+                    }
+                    final comments = snapshot.data ?? [];
+                    if (comments.isEmpty) {
+                      return const Center(child: Text('Chưa có bình luận nào.'));
+                    }
+                    return ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        final comment = comments[index];
+                        return FutureBuilder<UserModel?>(
+                          future: _getUser(comment.uid.toString()),
+                          builder: (context, userSnapshot) {
+                            final user = userSnapshot.data;
+                            return ListTile(
+                              leading: user?.imageUrl != null &&
+                                      user!.imageUrl.isNotEmpty
+                                  ? CircleAvatar(
+                                      backgroundImage:
+                                          NetworkImage(user.imageUrl))
+                                  : const CircleAvatar(child: Icon(Icons.person)),
+                              title: Text(comment.content,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500, fontSize: 17)),
+                              subtitle: Text(user?.name ?? 'Không rõ',
+                                  style: const TextStyle(fontSize: 14)),
+                            );
+                          },
                         );
                       },
                     );
                   },
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Nhập bình luận...',
-                      border: OutlineInputBorder(),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: const InputDecoration(
+                          hintText: 'Nhập bình luận...',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _addComment,
+                      child: const Text('Gửi'),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _addComment,
-                  child: const Text('Gửi'),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -1,48 +1,49 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:hive/hive.dart';
+
+class FavouriteLocal {
+  static const _boxName = 'favourites';
+  static Box<String> get _box => Hive.box<String>(_boxName);
+  static bool isLoved(String postId) => _box.containsKey(postId);
+  static Future<void> add(String postId) => _box.put(postId, postId);
+  static Future<void> remove(String postId) => _box.delete(postId);
+}
 
 class FavoriteService {
   static final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
-  static Future<bool> addFavorite(String postId, String token) async {
+  /// POST /favourite/{postId}
+  /// Return:
+  /// - true  => after op, post is loved (server trả 'data')
+  /// - false => after op, post is not loved (server không có 'data')
+  /// - null  => request failed (giữ nguyên UI nếu muốn)
+  static Future<bool?> toggleByResponse(String postId, String token) async {
     final res = await http.post(
-      Uri.parse('$baseUrl/favorite/add'),
+      Uri.parse('$baseUrl/posts/like/$postId'),
       headers: {
         "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode({"postId": postId}),
-    );
-    return res.statusCode == 200;
-  }
-
-  static Future<bool> removeFavorite(String postId, String token) async {
-    final res = await http.delete(
-      Uri.parse("$baseUrl/favorite/$postId"),
-      headers: {
-        "Authorization": "Bearer $token",
-      },
-    );
-    return res.statusCode == 200;
-  }
-
-  static Future<List<String>> getFavorites(String token) async {
-    final res = await http.get(
-      Uri.parse("$baseUrl/favorite/get"),
-      headers: {
-        "Authorization": "Bearer $token",
+        "Accept": "application/json",
       },
     );
 
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      final List favorites = data['favorites'];
+    if (res.statusCode < 200 || res.statusCode >= 300) return null;
 
-      return favorites.map((e) => e.toString()).toList(); // ép về List<String>
+    Map<String, dynamic>? json;
+    try {
+      json = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+    } catch (_) {}
+
+    final hasData = json != null && json['data'] != null;
+
+    // cập nhật Hive theo kết quả server
+    if (hasData) {
+      await FavouriteLocal.add(postId);    // now loved
+      return true;
     } else {
-      throw Exception("Failed to load favorites");
+      await FavouriteLocal.remove(postId); // now un-loved
+      return false;
     }
   }
-
 }

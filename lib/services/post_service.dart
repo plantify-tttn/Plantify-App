@@ -20,7 +20,7 @@ class PostService {
   Future<List<PostModel>> fetchAndSavePosts({
     int page = 1,
     int limit = 5,
-    String? token, // truyền token nếu có
+    String? token,
   }) async {
     final uri = Uri.parse('$baseUrl/posts').replace(queryParameters: {
       'page': '$page',
@@ -33,20 +33,20 @@ class PostService {
     };
 
     final response = await http.get(uri, headers: headers);
-
-    if (response.statusCode != 200) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       return [];
     }
 
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    // decode chuẩn để tránh lỗi tiếng Việt
+    final decoded =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
 
-    // API trả về mảng trong field "data" (không phải "posts")
-    final List rawList = (body['data'] ?? body['posts'] ?? []) as List;
+    // API trả mảng trong field "data"
+    final List list = (decoded['data'] ?? decoded['posts'] ?? []) as List;
 
-    final posts = rawList
-        .map<PostModel>((e) => PostModel.fromJson(e as Map<String, dynamic>))
+    return list
+        .map((e) => PostModel.fromJson(e as Map<String, dynamic>))
         .toList();
-    return posts;
   }
   /// Gọi API và lưu kết quả vào Hive
   Future<List<PostModel>> fetchUPosts({

@@ -6,11 +6,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:plantify/apps/router/router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/models/plants_model.dart';
+import 'package:plantify/provider/search_vm.dart';
 import 'package:plantify/services/identify_service.dart';
 import 'package:plantify/services/plants_service.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:vector_math/vector_math_64.dart' show Matrix4;
+import 'dart:math' as math;
 
 class IdentifyPage extends StatefulWidget {
   const IdentifyPage({super.key});
@@ -36,6 +39,9 @@ class _IdentifyPageState extends State<IdentifyPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<SearchVm>(context, listen: false).getPlanItems();
+    });
     _initializeCamera();
   }
 
@@ -77,19 +83,26 @@ class _IdentifyPageState extends State<IdentifyPage> {
 
   // Ảnh đã chụp full màn hình
   Widget _buildFullScreenCapturedImage() {
-    return SizedBox.expand(
-      child: Container(
-        color: Colors.black, // nền đen cho đẹp nếu còn viền trống
-        child: FittedBox(
-          fit: BoxFit.contain, // giữ nguyên tỷ lệ, KHÔNG cắt
-          child: Image.file(
-            File(_imagePath!),
-            // filterQuality: FilterQuality.high, // optional: nét hơn khi scale
-          ),
-        ),
-      ),
-    );
-  }
+  final img = Image.file(File(_imagePath!));
+  final needMirror = _isFrontCamera; // nếu bạn thấy vẫn đúng bên, đặt = false
+  final child = FittedBox(
+    fit: BoxFit.contain,
+    child: img,
+  );
+  return SizedBox.expand(
+    child: Container(
+      color: Colors.black,
+      child: needMirror
+          ? Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.rotationY(math.pi), // mirror captured
+              child: child,
+            )
+          : child,
+    ),
+  );
+}
+
 
 
   Future<void> _captureImage() async {
@@ -140,7 +153,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
         plantId = res;
 
         if (plantId.isNotEmpty) {
-          final plant = PlantsService().getPlantById(plantId)!;
+          final plant = PlantsService().getPlantById(plantId);
           if (plant != null) {
             setState(() => _recognizedPlant = plant);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -351,7 +364,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                                 size: 22, color: Colors.white),
                             const SizedBox(width: 8),
                             Text(
-                              'Đây là cây ${_recognizedPlant!.name}',
+                              'Đây là ${_recognizedPlant!.name}',
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,

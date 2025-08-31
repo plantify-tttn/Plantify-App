@@ -14,132 +14,134 @@ class DiseasesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(disease.localizedName(locale)),
-        leading: IconButton(
-          onPressed: (){
-            context.pop();
-          }, 
-          icon: Icon(Icons.arrow_back)
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(disease.localizedName(locale)),
+          leading: IconButton(
+            onPressed: (){
+              context.pop();
+            }, 
+            icon: Icon(Icons.arrow_back)
+          ),
+          actions: [
+          IconButton(
+            icon: const Icon(Icons.language),
+            tooltip: 'Change Language',
+            onPressed: () {
+              final localeProvider = context.read<LocaleProvider>();
+              final isVietnamese = locale.languageCode == 'vi';
+      
+              localeProvider.setLocale(Locale(isVietnamese ? 'en' : 'vi'));
+            },
+          ),
+        ],
         ),
-        actions: [
-        IconButton(
-          icon: const Icon(Icons.language),
-          tooltip: 'Change Language',
-          onPressed: () {
-            final localeProvider = context.read<LocaleProvider>();
-            final isVietnamese = locale.languageCode == 'vi';
-
-            localeProvider.setLocale(Locale(isVietnamese ? 'en' : 'vi'));
-          },
-        ),
-      ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (disease.images.isNotEmpty)
-              ImageCarousel(imageUrls: disease.images),
-
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🌿${AppLocalizations.of(context)!.overview}",
-                style: TextStyle(
-                  color: Color(MyColor.pr1),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (disease.images.isNotEmpty)
+                ImageCarousel(imageUrls: disease.images),
+      
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🌿${AppLocalizations.of(context)!.overview}",
+                  style: TextStyle(
+                    color: Color(MyColor.pr1),
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                disease.localizedDescription(locale),
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  fontSize: 16, 
-                  height: 1.6,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  disease.localizedDescription(locale),
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
+                    fontSize: 16, 
+                    height: 1.6,
+                  ),
                 ),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ☀️ causes
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🦠 ${AppLocalizations.of(context)!.causes}",
-                style: TextStyle(
-                  color: Colors.red.shade400,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+      
+              const SizedBox(height: 20),
+      
+              // ☀️ causes
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🦠 ${AppLocalizations.of(context)!.causes}",
+                  style: TextStyle(
+                    color: Colors.red.shade400,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildHighlightBox(
-              disease.localizedCauses(locale),
-              icon: Icons.biotech_rounded,
-              backgroundColor: Colors.red.shade50,
-            ),
-            // ☀️ symptoms
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🍂 ${AppLocalizations.of(context)!.symptoms}",
-                style: TextStyle(
-                  color: Colors.orange.shade400,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              _buildHighlightBox(
+                disease.localizedCauses(locale),
+                icon: Icons.biotech_rounded,
+                backgroundColor: Colors.red.shade50,
+              ),
+              // ☀️ symptoms
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🍂 ${AppLocalizations.of(context)!.symptoms}",
+                  style: TextStyle(
+                    color: Colors.orange.shade400,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildHighlightBox(
-              disease.localizedSymptoms(locale),
-              icon: Icons.warning_amber_rounded,
-              backgroundColor: Colors.orange.shade50,
-            ),
-            // ☀️ prevention
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🛡️ ${AppLocalizations.of(context)!.prevention}",
-                style: TextStyle(
-                  color: Colors.teal.shade400,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              _buildHighlightBox(
+                disease.localizedSymptoms(locale),
+                icon: Icons.warning_amber_rounded,
+                backgroundColor: Colors.orange.shade50,
+              ),
+              // ☀️ prevention
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🛡️ ${AppLocalizations.of(context)!.prevention}",
+                  style: TextStyle(
+                    color: Colors.teal.shade400,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildHighlightBox(
-              disease.localizedPrevention(locale),
-              icon: Icons.verified_user_rounded,
-              backgroundColor: Colors.teal.shade50,
-            ),
-
-            // ☀️ treatment
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "🧴 ${AppLocalizations.of(context)!.treatment}",
-                style: TextStyle(
-                  color: Colors.green.shade400,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              _buildHighlightBox(
+                disease.localizedPrevention(locale),
+                icon: Icons.verified_user_rounded,
+                backgroundColor: Colors.teal.shade50,
+              ),
+      
+              // ☀️ treatment
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "🧴 ${AppLocalizations.of(context)!.treatment}",
+                  style: TextStyle(
+                    color: Colors.green.shade400,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            _buildHighlightBox(
-              disease.localizedTreatment(locale),
-              icon: Icons.healing_rounded,
-              backgroundColor: Colors.green.shade50,
-            ),
-            const SizedBox(height: 30),
-          ],
+              _buildHighlightBox(
+                disease.localizedTreatment(locale),
+                icon: Icons.healing_rounded,
+                backgroundColor: Colors.green.shade50,
+              ),
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
       ),
     );

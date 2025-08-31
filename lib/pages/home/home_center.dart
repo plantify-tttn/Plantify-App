@@ -21,43 +21,43 @@ class _HomeCenterState extends State<HomeCenter> {
     IdentifyPage(),
     ProfilePage(),
   ];
-   
 
-  void refreshMiniPlayer() {
-    setState(() {});
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: _selectedIndex,
-            children: _pages,
-          ),
-        ],
-      ),
+      // 👇 màu nền sẽ xuất hiện dưới status bar (vì status bar trong suốt)
+      backgroundColor: Colors.white, // hoặc Theme.of(context).scaffoldBackgroundColor
       extendBody: true,
-      bottomNavigationBar: CurvedNavigationBar(
-      index: _selectedIndex,
-      height: 60,
-      backgroundColor: Colors.transparent, // 👈 để thấy nội dung phía dưới
-      color: const Color.fromARGB(255, 110, 135, 112), // màu của thanh cong
-      buttonBackgroundColor: const Color.fromARGB(255, 57, 173, 61), // màu nút nổi
-      animationDuration: const Duration(milliseconds: 300),
-      animationCurve: Curves.easeInOut,
-      items: <Widget>[
-        Image.asset('assets/images/home2.png', width: 30, height: 30),
-        Image.asset('assets/images/diagnose2.png', width: 30, height: 30),
-        Image.asset('assets/images/identify2.png', width: 30, height: 30),
-        Image.asset('assets/images/profile2.png', width: 30, height: 30),
-      ],
-      onTap: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
-    ),
+
+      body: SafeArea(              // ✅ bọc body, không bọc Scaffold
+        top: true,
+        bottom: false,            // để bar dưới có thể tràn, ta bọc riêng ở dưới
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
+      ),
+
+      bottomNavigationBar: SafeArea( // ✅ chỉ đẩy thanh nav lên khỏi system navbar
+        top: false,
+        child: CurvedNavigationBar(
+          index: _selectedIndex,
+          height: 60,
+          backgroundColor: Colors.transparent,
+          color: const Color.fromARGB(255, 110, 135, 112),
+          buttonBackgroundColor: const Color.fromARGB(255, 57, 173, 61),
+          animationDuration: const Duration(milliseconds: 300),
+          animationCurve: Curves.easeInOut,
+          items: const [
+            // dùng const Image.asset nếu có thể để tối ưu
+            Image(image: AssetImage('assets/images/home2.png'), width: 30, height: 30),
+            Image(image: AssetImage('assets/images/diagnose2.png'), width: 30, height: 30),
+            Image(image: AssetImage('assets/images/identify2.png'), width: 30, height: 30),
+            Image(image: AssetImage('assets/images/profile2.png'), width: 30, height: 30),
+          ],
+          onTap: (index) => setState(() => _selectedIndex = index),
+        ),
+      ),
     );
   }
 }

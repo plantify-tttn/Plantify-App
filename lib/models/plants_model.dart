@@ -47,6 +47,12 @@ class PlantModel extends HiveObject {
   @HiveField(13)
   final String noteEn;
 
+  @HiveField(14)
+  final String seed;
+
+  @HiveField(15)
+  final String seedEn;
+
   PlantModel({
     required this.id,
     required this.name,
@@ -62,6 +68,8 @@ class PlantModel extends HiveObject {
     required this.seasonEN,
     required this.note,
     required this.noteEn,
+    required this.seed,
+    required this.seedEn
   });
 
   factory PlantModel.fromJson(Map<String, dynamic> json) {
@@ -80,6 +88,8 @@ class PlantModel extends HiveObject {
       seasonEN: json['season_en'] ?? '',
       note: json['note'] ?? '',
       noteEn: json['note_en'] ?? '',
+      seed: json['seed'] ?? '',
+      seedEn: json['seed_en'] ?? '',
     );
   }
 
@@ -99,6 +109,8 @@ class PlantModel extends HiveObject {
       'season_en': seasonEN,
       'note': note,
       'note_en': noteEn,
+      'seed': seed,
+      'seed_en': seedEn,
     };
   }
 
@@ -111,4 +123,5 @@ class PlantModel extends HiveObject {
       locale.languageCode == 'vi' ? cultivation : cultivationEn;
   String localizedSeason(Locale locale) => locale.languageCode == 'vi' ? season : seasonEN;
   String localizedNote(Locale locale) => locale.languageCode == 'vi' ? note : noteEn;
+  String localizedSeed(Locale locale) => locale.languageCode == 'vi' ? seed : seedEn;
 }

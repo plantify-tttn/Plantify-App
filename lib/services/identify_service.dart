@@ -42,7 +42,8 @@ class IdentifyService {
       }
 
       if (ok) {
-        return data['id'] ?? 'corn001';
+        print('===== ${data['labelId']}');
+        return data['labelId'] ?? 'corn001';
       } else {
         return '';
       }

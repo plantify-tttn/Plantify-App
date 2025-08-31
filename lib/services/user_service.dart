@@ -9,7 +9,11 @@ import 'package:plantify/models/user_model.dart';
 
 class UserService {
   final String baseUrl = dotenv.env['BASE_URL'] ?? "";
-  final String _token = getToken();
+  String? get _tokenOrNull {
+  final u = Hive.box<UserModel>('userBox').get('currentUser');
+  final t = u?.accessToken ?? '';
+  return t.isNotEmpty ? t : null;
+}
 
   /// Lấy thông tin người dùng theo ID
   Future<UserModel> getUserById(String id) async {
@@ -52,12 +56,14 @@ class UserService {
     return data['email'];
   }
   Future<String> getImagesByToken() async{
+    final t = _tokenOrNull;
+    if (t == null) throw Exception('Missing token');
     final url = Uri.parse('$baseUrl/auth/profile');
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $_token',
+        'Authorization': 'Bearer $t',
       },
     );
     if (response.statusCode != 201 && response.statusCode != 200) {
@@ -111,6 +117,8 @@ class UserService {
   }
 
   Future<String> uploadAvatar(File file, {String? token}) async {
+    final t = token ?? _tokenOrNull;
+    if (t == null) throw Exception('Missing token');
     final uri =
         Uri.parse('$baseUrl/files/upload'); // đổi endpoint theo BE của bạn
     final req = http.MultipartRequest('POST', uri)
@@ -120,7 +128,6 @@ class UserService {
         filename: p.basename(file.path),
       ));
 
-    final t = token ?? _token;
     if (t.isNotEmpty) {
       req.headers['Authorization'] = 'Bearer $t';
     }
@@ -204,10 +211,10 @@ class UserService {
     String? email,
     File? newAvatar,
   }) async {
-    final token = _token;
-
+    final t = _tokenOrNull;
+  if (t == null) throw Exception('Missing token');
     return await updateProfile(
-      token: token,
+      token: t,
       name: name,
       email: email,
       file: newAvatar,
@@ -311,5 +318,42 @@ class UserService {
     );
 
     await box.put(_userKey, merged);
+  }
+}
+
+class JwtUtil {
+  static bool isExpired(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return true; // token lỗi coi như hết hạn
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      ) as Map<String, dynamic>;
+      final exp = payload['exp'];
+      if (exp is! int) return true;
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+      return DateTime.now().isAfter(expiresAt);
+    } catch (_) {
+      return true; // parse lỗi => coi như expired
+    }
+  }
+
+  static final String _baseUrl = dotenv.env['BASE_URL'] ?? "";
+
+  /// Gọi server xác thực token (phòng khi token bị revoke dù exp còn sống)
+  static Future<bool> validateRemote(String token) async {
+    try {
+      final res = await http.get(
+        Uri.parse("$_baseUrl/auth/profile"),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      // 200/201 => hợp lệ, 401/403 => hết hạn/không hợp lệ
+      return res.statusCode >= 200 && res.statusCode < 300;
+    } catch (_) {
+      return false;
+    }
   }
 }

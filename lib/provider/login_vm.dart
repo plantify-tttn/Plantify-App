@@ -42,8 +42,16 @@ class LoginVm extends ChangeNotifier {
       final imageUrl = (result['imageUrl'] as String?) ??
           'https://cdn-icons-png.flaticon.com/512/8792/8792047.png';
       final _email;
+      if (token.isEmpty || name.isEmpty) {
+        _isLogin = false;
+        notifyListeners();
+        return 'token hoac ten rong';
+      }
       if (token !='') {
+        print('===== t');
         _email = await UserService().getEmailByToken(token);
+        //_email = (result['email'] ?? '').toString();
+        print('====== s');
       } else {
         _email = (result['email'] ?? '').toString();
       }
@@ -55,13 +63,9 @@ class LoginVm extends ChangeNotifier {
         email: _email,
         accessToken: token,
       );
-      if (token.isEmpty || name.isEmpty) {
-        _isLogin = false;
-        notifyListeners();
-        return 'token hoac ten rong';
-      }
-
+      print('===== t');
       await UserService.hiveSaveUser(userModel);
+      print('====== s');
 
       _isLogin = true;
       notifyListeners();
