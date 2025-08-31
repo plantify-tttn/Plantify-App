@@ -37,8 +37,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadMore() async {
     try {
       await context.read<PostProvider>().loadMorePost();
-    } finally {
-    }
+    } finally {}
   }
 
   void _onScroll() {
@@ -61,12 +60,13 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           controller: _scrollController,
           padding: EdgeInsets.zero,
-          physics: const AlwaysScrollableScrollPhysics(), // kéo được dù ít nội dung
+          physics:
+              const AlwaysScrollableScrollPhysics(), // kéo được dù ít nội dung
           children: [
             const SizedBox(height: 42),
             const HomeHeader(),
             const SizedBox(height: 0),
-            const CraetePost(),
+            const CreatePost(),
             const SizedBox(height: 10),
             const PostList(),
             const SizedBox(height: 60),

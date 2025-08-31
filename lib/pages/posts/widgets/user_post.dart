@@ -48,6 +48,7 @@ class UserPost extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 5,),
                 Text(
                   formattedTime,
                   style: const TextStyle(

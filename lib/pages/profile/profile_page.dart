@@ -16,7 +16,6 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userVm = Provider.of<UserVm>(context);
     final local = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -24,12 +23,12 @@ class ProfilePage extends StatelessWidget {
         title: Text(local.profile),
       ),
       body:
-          _buildUserInfo(context, userVm),
+          _buildUserInfo(context),
     );
   }
 
-  Widget _buildUserInfo(BuildContext context, UserVm userVm) {
-  final user = UserService.hiveGetUser();
+  Widget _buildUserInfo(BuildContext context) {
+  final user = context.watch<UserVm>().user; // 👈 listen changes từ Hive qua UserVm
   final themeProvider = Provider.of<ThemeProvider>(context);
   final localeProvider = Provider.of<LocaleProvider>(context);
   final local = AppLocalizations.of(context)!;
@@ -216,7 +215,7 @@ class ProfilePage extends StatelessWidget {
                 if (confirm == true) {
                   if (context.mounted) {
                     context.goNamed(RouterName.login);
-                    userVm.logout();
+                    context.read<UserVm>().logout();
                   }
                 }
               },
