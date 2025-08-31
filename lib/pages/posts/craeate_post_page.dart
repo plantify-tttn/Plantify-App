@@ -8,6 +8,7 @@ import 'package:plantify/provider/post_provider.dart';
 import 'package:plantify/services/post_service.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:plantify/theme/color.dart';
+import 'package:provider/provider.dart';
 
 class CreatePostPage extends StatefulWidget {
   const CreatePostPage({super.key});
@@ -20,7 +21,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
   final TextEditingController _contentController = TextEditingController();
   final _picker = ImagePicker();
   final int _maxChars = 500;
-  final PostProvider postProvider = PostProvider();
   File? _imageFile;
   bool _submitting = false;
 
@@ -118,7 +118,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
       throw Exception('Missing token');
     }
     if (_imageFile != null) {
-      postProvider.craetePost(content: content, image: _imageFile!);
+      context.read<PostProvider>().craetePost(content: content, image: _imageFile!);
       // await PostService().createPost(
       //   content: content,
       //   image: _imageFile!,
