@@ -25,18 +25,27 @@ class PlantsService {
     }
   }
   Future<List<DiseaseModel>> getDisease() async {
-    final response = await http.get(Uri.parse('$baseUrl/plant/diseases'));
-
-    if (response.statusCode == 200) {
-       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-      final List plantsJson =
-      decoded is List ? decoded : (decoded['disease'] as List? ?? []);
-      final disease = plantsJson.map((e) => DiseaseModel.fromJson(e)).toList();
-      await saveDiseaseToHive(disease);
-      return disease;
-    } else {
-      throw Exception('Failed to load plants');
+    final res = await http.get(Uri.parse('$baseUrl/plant/diseases'));
+    if (res.statusCode != 200) {
+      throw Exception('Failed to load diseases: ${res.statusCode}');
     }
+
+    final decoded = jsonDecode(utf8.decode(res.bodyBytes));
+
+    // API có thể trả List trực tiếp, hoặc bọc trong "diseases"/"disease"
+    final List<dynamic> items = decoded is List
+        ? decoded
+        : (decoded['diseases'] as List?) ??
+          (decoded['disease'] as List?) ??
+          <dynamic>[];
+
+    final disease = items
+        .whereType<Map<String, dynamic>>()
+        .map(DiseaseModel.fromJson)
+        .toList();
+
+    await saveDiseaseToHive(disease);
+    return disease;
   }
   /// Lấy dữ liệu từ Hive
   List<PlantModel> getPlantsFromHive() {

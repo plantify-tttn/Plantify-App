@@ -56,6 +56,19 @@ class PlantDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  plant.localizedOverview(locale),
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
+                    fontSize: 16, 
+                    height: 1.6,
+                  ),
+                ),
+              ),
+      
+              const SizedBox(height: 20),
               if (plant.localizedSeed(locale).isNotEmpty) ...[
                 const SizedBox(height: 20),
                 Padding(
@@ -75,20 +88,6 @@ class PlantDetailPage extends StatelessWidget {
                   backgroundColor: Colors.teal.shade100,
                 ),
               ],
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  plant.localizedOverview(locale),
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(
-                    fontSize: 16, 
-                    height: 1.6,
-                  ),
-                ),
-              ),
-      
-              const SizedBox(height: 20),
-      
               // 🌱 CHARACTERISTICS
               Padding(
                 padding: const EdgeInsets.all(8.0),

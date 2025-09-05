@@ -55,24 +55,33 @@ class UserService {
     final data = jsonDecode(response.body);
     return data['email'];
   }
-  Future<String> getImagesByToken() async{
+  Future<String?> getImagesByToken() async {
     final t = _tokenOrNull;
     if (t == null) throw Exception('Missing token');
+
     final url = Uri.parse('$baseUrl/auth/profile');
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $t',
+        'Accept': 'application/json',
       },
     );
-    if (response.statusCode != 201 && response.statusCode != 200) {
-      throw Exception(
-          'Cập nhật thất bại: ${response.statusCode} ${response.body}');
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Cập nhật thất bại: ${response.statusCode} ${response.body}');
     }
 
-    final data = jsonDecode(response.body);
-    return data['imageurl'];
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    final dynamic raw = data['imageurl'] ??
+                        data['imageUrl'] ??
+                        data['image_url'] ??
+                        data['avatar'] ??
+                        data['image'];
+
+    if (raw is String && raw.trim().isNotEmpty) return raw.trim();
+    return null; // ← không ném lỗi, để caller tự merge
   }
 
   /// Lấy danh sách tất cả người dùng
@@ -164,17 +173,15 @@ class UserService {
       );
     }
 
-    if (res.statusCode != 200 && res.statusCode != 201) {
-      throw Exception('Cập nhật thất bại: ${res.statusCode} ${res.body}');
-    }
-    if (res.statusCode == 200 || res.statusCode == 201){
-      final imageUrl = await getImagesByToken();
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final imageUrl = await getImagesByToken(); // String? now
+
       await hiveUpsertUserPartial(
         name: name,
-        imageUrl: imageUrl,
+        imageUrl: imageUrl,   // nullable → hàm sẽ bỏ qua nếu null/rỗng
         email: email,
-        accessToken: token, // lưu token mới nếu có
-      ); // đồng bộ lại Hive
+        accessToken: token,
+      );
     }
     final user = hiveGetUser();
     return user!;

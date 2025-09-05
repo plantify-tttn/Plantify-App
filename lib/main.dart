@@ -29,7 +29,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
-        ChangeNotifierProvider(create: (_) => UserVm()),
+        ChangeNotifierProvider(create: (_) => UserVm()..init(), lazy: false,),
         ChangeNotifierProvider(create: (_) => PostProvider()),
         ChangeNotifierProvider(create: (_) => DiagnoseProvider()),
         ChangeNotifierProvider(create: (_) => SearchVm())

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
 import 'dart:ui';
 
@@ -64,33 +66,41 @@ class DiseaseModel extends HiveObject {
     required this.images
   });
 
-  /// Factory to create from JSON
+  // Helper nhỏ: ép mọi dạng về List<String> mà không thêm field mới
+  static List<String> _toStringList(dynamic v) {
+    if (v == null) return const [];
+    if (v is List) return v.map((e) => e.toString()).toList();
+    if (v is String && v.trim().isNotEmpty) {
+      // Nếu server trả 1 URL string -> biến thành list 1 phần tử
+      // Nếu là JSON string của 1 mảng -> parse thành list
+      try {
+        final parsed = jsonDecode(v);
+        if (parsed is List) return parsed.map((e) => e.toString()).toList();
+      } catch (_) {/* not a JSON array string */}
+      return [v];
+    }
+    return const [];
+  }
+
   factory DiseaseModel.fromJson(Map<String, dynamic> json) {
     return DiseaseModel(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      nameEn: json['name_en'] ?? '',
-      description: json['description'] ?? '',
-      descriptionEn: json['description_en'] ?? '',
-      symptoms: json['symptoms'] ?? '',
-      symptomsEn: json['symptoms_en'] ?? '',
-      causes: json['causes'] ?? '',
-      causesEn: json['causes_en'] ?? '',
-      prevention: json['prevention'] ?? '',
-      preventionEn: json['prevention_en'] ?? '',
-      treatment: json['treatment'] ?? '',
-      treatmentEn: json['treatment_en'] ?? '',
-      images: List<String>.from(json['images'] ?? [
-        "https://i.pinimg.com/736x/56/62/06/566206f8c38093a733f1464565e5c3b8.jpg",
-        "https://i.pinimg.com/736x/ee/c1/2b/eec12bbb25f5cb67e3c6856576a3b831.jpg",
-        "https://i.pinimg.com/1200x/bc/4f/10/bc4f10e98bc5e6a2b15e51b49d2fe89b.jpg",
-        "https://i.pinimg.com/1200x/12/08/10/120810d523ebd73f1dbeb2d85ea54bde.jpg",
-        "https://i.pinimg.com/1200x/a9/eb/e9/a9ebe90ae4deba12d6fb1702c347f400.jpg"
-    ]),
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      nameEn: json['name_en']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      descriptionEn: json['description_en']?.toString() ?? '',
+      symptoms: json['symptoms']?.toString() ?? '',
+      symptomsEn: json['symptoms_en']?.toString() ?? '',
+      causes: json['causes']?.toString() ?? '',
+      causesEn: json['causes_en']?.toString() ?? '',
+      prevention: json['prevention']?.toString() ?? '',
+      preventionEn: json['prevention_en']?.toString() ?? '',
+      treatment: json['treatment']?.toString() ?? '',
+      treatmentEn: json['treatment_en']?.toString() ?? '',
+      images: _toStringList(json['images']),
     );
   }
 
-  /// Convert to JSON (for API / export)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
