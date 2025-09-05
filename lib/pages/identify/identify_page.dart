@@ -131,57 +131,55 @@ class _IdentifyPageState extends State<IdentifyPage> {
   }
 
   void _clearImage() {
-    setState(() => _imagePath = null);
-  }
+  setState(() {
+    _imagePath = null;
+    _recognizedPlant = null; // 👈 clear luôn kết quả
+  });
+}
 
   Future<void> _sendSeed() async {
-    if (_imagePath == null || _uploading) return;
+  if (_imagePath == null || _uploading) return;
 
-    setState(() => _uploading = true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('⏫ Đang tải ảnh...')),
-    );
+  final pathAtRequest = _imagePath; // 👈 snapshot đường dẫn ảnh
+  setState(() => _uploading = true);
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('⏫ Đang tải ảnh...')),
+  );
 
-    try {
-      final res =
-          await IdentifyService().sendSeedImage(File(_imagePath!), _token);
+  try {
+    final res = await IdentifyService().sendSeedImage(File(pathAtRequest!), _token);
 
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-      if (res != '') {
-        String? plantId;
-        plantId = res;
+    // Nếu trong lúc chờ, user đã retake/clear => bỏ qua kết quả cũ
+    if (!mounted || _imagePath != pathAtRequest) return;
 
-        if (plantId.isNotEmpty) {
-          final plant = PlantsService().getPlantById(plantId);
-          if (plant != null) {
-            setState(() => _recognizedPlant = plant);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('✅ Nhận diện: ${plant.name}')),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('⚠️ Không tìm thấy thông tin cây theo ID.')),
-            );
-          }
-        } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('❌ Chưa nhận diện được')));
-        }
+    if (res.isNotEmpty) {
+      print('==== plant id: $res');
+      final plant = PlantsService().getPlantById(res);
+      if (plant != null) {
+        setState(() => _recognizedPlant = plant);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✅ Nhận diện: ${plant.name}')),
+        );
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('❌ gửi thất bại')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('⚠️ Không tìm thấy thông tin cây theo ID.')),
+        );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('❌ Lỗi: $e')));
-      // print(e);
-    } finally {
-      if (mounted) setState(() => _uploading = false);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('❌ Chưa nhận diện được')),
+      );
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('❌ Lỗi: $e')));
+  } finally {
+    if (mounted) setState(() => _uploading = false);
   }
+}
 
   @override
   void dispose() {
@@ -238,12 +236,10 @@ class _IdentifyPageState extends State<IdentifyPage> {
                         CircleAvatar(
                           backgroundColor: Colors.white24,
                           child: IconButton(
-                            icon: Icon(
-                              hasImage ? Icons.delete_outline : Icons.photo,
-                              color: Colors.white,
-                            ),
-                            onPressed:
-                                hasImage ? _clearImage : _pickFromGallery,
+                            icon: Icon(hasImage ? Icons.delete_outline : Icons.photo, color: Colors.white),
+                            onPressed: _uploading
+                                ? null // 👈 khoá khi upload
+                                : (hasImage ? _clearImage : _pickFromGallery),
                           ),
                         ),
 
@@ -298,14 +294,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 10),
                             ),
-                            onPressed: _uploading
-                                ? null
-                                : () {
-                                    setState(() {
-                                      _recognizedPlant = null;
-                                      _clearImage(); // <-- GỌI HÀM
-                                    });
-                                  },
+                            onPressed: _uploading ? null : _clearImage,
                             icon: const Icon(Icons.refresh),
                             label: const Text('Retake'),
                           ),
@@ -332,7 +321,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                         ],
                       ),
                     ),
-                  if (_recognizedPlant != null)
+                  if (hasImage && _recognizedPlant != null)
                     Positioned(
                       bottom: 180,
                       right: 20,
