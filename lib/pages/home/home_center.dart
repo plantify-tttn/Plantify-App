@@ -25,10 +25,8 @@ class _HomeCenterState extends State<HomeCenter> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 👇 màu nền sẽ xuất hiện dưới status bar (vì status bar trong suốt)
-      backgroundColor: Colors.white, // hoặc Theme.of(context).scaffoldBackgroundColor
+      // 👇 màu nền sẽ xuất hiện dưới status bar (vì status bar trong suốt) // hoặc Theme.of(context).scaffoldBackgroundColor
       extendBody: true,
-
       body: SafeArea(              // ✅ bọc body, không bọc Scaffold
         top: true,
         bottom: false,            // để bar dưới có thể tràn, ta bọc riêng ở dưới

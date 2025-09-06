@@ -3,6 +3,7 @@ import 'package:plantify/models/post_model.dart';
 import 'package:plantify/models/user_model.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:intl/intl.dart'; // để format thời gian
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserPost extends StatelessWidget {
   final PostModel post;
@@ -14,6 +15,7 @@ class UserPost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     final user = UserService.hiveGetUserById(post.userid);
     if(user != null){
       final formattedTime = _formatTime(post.created_at);
@@ -72,9 +74,9 @@ class UserPost extends StatelessWidget {
           );
         } else if (snapshot.hasError) {
           // print('==========${snapshot.error}');
-          return const Padding(
+          return Padding(
             padding: EdgeInsets.symmetric(horizontal: 15),
-            child: Row(children: [Text("Lỗi khi tải user")]),
+            child: Row(children: [Text(local.errorLoadUser)]),
           );
         } else if (!snapshot.hasData) {
           return const SizedBox();

@@ -18,6 +18,7 @@ class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final local = AppLocalizations.of(context)!;
     return Consumer<RegisterVm>(builder: (context, registerVm, child) {
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
@@ -103,7 +104,7 @@ class RegisterPage extends StatelessWidget {
                         child: LoginTextfield(
                           controller: registerVm.passController,
                           onChanged: registerVm.validatePassword,
-                          hintText: "Mật khẩu",
+                          hintText: local.password,
                           errorText: registerVm.passError,
                           isPassword: true,
                         ),
@@ -116,7 +117,7 @@ class RegisterPage extends StatelessWidget {
                         child: LoginTextfield(
                           controller: registerVm.rePassController,
                           onChanged: registerVm.validateRePassword,
-                          hintText: "Xác nhận mật khẩu",
+                          hintText: local.repassword,
                           errorText: registerVm.rePassError,
                           isPassword: true,
                         ),
@@ -126,7 +127,7 @@ class RegisterPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Bạn đã có tài khoản?',
+                            local.haveAccount,
                             style: TextStyle(
                               color: Color(MyColor.black),
                               fontStyle: FontStyle.italic,
@@ -138,7 +139,7 @@ class RegisterPage extends StatelessWidget {
                               context.goNamed(RouterName.login);
                             },
                             child: Text(
-                              'Đăng nhập',
+                              local.login,
                               style: TextStyle(
                                 color: Color(MyColor.pr2),
                                 fontStyle: FontStyle.italic,
@@ -160,7 +161,7 @@ class RegisterPage extends StatelessWidget {
                             // SnackBar báo trước (optional nhưng recommend)
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: const Text("Đăng ký thành công"),
+                                content: Text(local.registerSuccess),
                                 behavior: SnackBarBehavior.floating,
                                 duration: const Duration(seconds: 1),
                               ),
@@ -169,11 +170,11 @@ class RegisterPage extends StatelessWidget {
                             // Confirm dialog “đẹp”
                             final confirm = await showPrettyConfirm(
                               context,
-                              title: "Đăng ký thành công 🎉",
+                              title: local.registerSuccess + " 🎉",
                               message:
-                                  "Bạn muốn chuyển sang trang đăng nhập không?",
-                              confirmText: "Đi đến Login",
-                              cancelText: "Ở lại",
+                                  local.goToLogin,
+                              confirmText: local.goLogin,
+                              cancelText: local.cancel,
                             );
 
                             if (confirm == true && context.mounted) {
@@ -192,7 +193,7 @@ class RegisterPage extends StatelessWidget {
                           ),
                           child: Center(
                             child: Text(
-                              'Đăng ký',
+                              local.register,
                               style: TextStyle(
                                 fontSize: 15,
                                 color: Color(MyColor.white),

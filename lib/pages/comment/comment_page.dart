@@ -4,6 +4,7 @@ import 'package:plantify/models/comment_model.dart';
 import 'package:plantify/services/comment_service.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:plantify/models/user_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CommentPage extends StatefulWidget {
   final PostModel post;
@@ -81,6 +82,7 @@ class _CommentPageState extends State<CommentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final local = AppLocalizations.of(context)!;
     return WillPopScope(
       // ✅ trả result khi back (swipe/back)
       onWillPop: () async {
@@ -90,7 +92,9 @@ class _CommentPageState extends State<CommentPage> {
       child: SafeArea(
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('Bình luận'),
+            title: Text(
+              local.comment
+            ),
             leading: IconButton(
               // ✅ back button cũng trả result
               icon: const Icon(Icons.arrow_back),
@@ -114,11 +118,11 @@ class _CommentPageState extends State<CommentPage> {
                     }
                     if (snapshot.hasError) {
                       // print('❌ Lỗi FutureBuilder: ${snapshot.error}');
-                      return const Center(child: Text('Lỗi khi tải bình luận.'));
+                      return Center(child: Text(local.errUpload));
                     }
                     final comments = snapshot.data ?? [];
                     if (comments.isEmpty) {
-                      return const Center(child: Text('Chưa có bình luận nào.'));
+                      return Center(child: Text(local.noComment));
                     }
                     return ListView.builder(
                       itemCount: comments.length,
@@ -138,7 +142,7 @@ class _CommentPageState extends State<CommentPage> {
                               title: Text(comment.content,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w500, fontSize: 17)),
-                              subtitle: Text(user?.name ?? 'Không rõ',
+                              subtitle: Text(user?.name ?? local.unKnow,
                                   style: const TextStyle(fontSize: 14)),
                             );
                           },
@@ -155,8 +159,8 @@ class _CommentPageState extends State<CommentPage> {
                     Expanded(
                       child: TextField(
                         controller: _controller,
-                        decoration: const InputDecoration(
-                          hintText: 'Nhập bình luận...',
+                        decoration: InputDecoration(
+                          hintText: local.enterComment,
                           border: OutlineInputBorder(),
                         ),
                       ),

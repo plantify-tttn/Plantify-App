@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:plantify/pages/posts/user_post_list.dart';
-import 'package:plantify/provider/post_provider.dart';
-import 'package:plantify/services/user_service.dart';
-import 'package:plantify/provider/user_vm.dart';
-import 'package:provider/provider.dart';
 
 class UserPostPage extends StatefulWidget {
   const UserPostPage({super.key});

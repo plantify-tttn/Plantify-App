@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:plantify/models/post_model.dart';
 import 'package:plantify/pages/posts/post_layout.dart';
 import 'package:plantify/provider/post_provider.dart';
-import 'package:plantify/services/post_service.dart';
 import 'package:provider/provider.dart';
 
 class PostList extends StatefulWidget {

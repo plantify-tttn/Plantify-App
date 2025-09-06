@@ -3,8 +3,6 @@ import 'package:plantify/pages/home/home_header.dart';
 import 'package:plantify/pages/posts/craete_post.dart';
 import 'package:plantify/pages/posts/post_list.dart';
 import 'package:plantify/provider/post_provider.dart';
-import 'package:plantify/services/user_service.dart';
-import 'package:plantify/provider/user_vm.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {

@@ -40,7 +40,9 @@ class ProfilePage extends StatelessWidget {
         children: [
           const Icon(Icons.info_outline, size: 50, color: Colors.grey),
           const SizedBox(height: 12),
-          const Text("Chưa có thông tin người dùng"),
+          Text(
+            local.noUser
+          ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
             icon: const Icon(Icons.logout),
@@ -83,8 +85,8 @@ class ProfilePage extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.person_outline, color: Colors.blue),
-              label: const Text(
-                "Thông tin cá nhân",
+              label: Text(
+                local.information,
                 style: TextStyle(color: Colors.blue),
               ),
               style: OutlinedButton.styleFrom(
@@ -107,8 +109,8 @@ class ProfilePage extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.article_outlined, color: Colors.green),
-              label: const Text(
-                "Bài viết",
+              label: Text(
+                local.posted,
                 style: TextStyle(color: Colors.green),
               ),
               style: OutlinedButton.styleFrom(

@@ -3,17 +3,16 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:plantify/apps/router/router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/models/plants_model.dart';
 import 'package:plantify/provider/search_vm.dart';
 import 'package:plantify/services/identify_service.dart';
 import 'package:plantify/services/plants_service.dart';
 import 'package:plantify/services/user_service.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:vector_math/vector_math_64.dart' show Matrix4;
 import 'dart:math' as math;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class IdentifyPage extends StatefulWidget {
   const IdentifyPage({super.key});
@@ -143,7 +142,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
   final pathAtRequest = _imagePath; // 👈 snapshot đường dẫn ảnh
   setState(() => _uploading = true);
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('⏫ Đang tải ảnh...')),
+    SnackBar(content: Text('⏫ Đang tải ảnh...')),
   );
 
   try {
@@ -190,7 +189,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
   @override
   Widget build(BuildContext context) {
     final hasImage = _imagePath != null;
-    final locale = Localizations.localeOf(context);
+    final local = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -296,7 +295,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                             ),
                             onPressed: _uploading ? null : _clearImage,
                             icon: const Icon(Icons.refresh),
-                            label: const Text('Retake'),
+                            label: Text(local.retake),
                           ),
                           TextButton.icon(
                             style: TextButton.styleFrom(
@@ -316,7 +315,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                                     ),
                                   )
                                 : const Icon(Icons.send),
-                            label: Text(_uploading ? 'Uploading...' : 'Use'),
+                            label: Text(_uploading ? local.upload : local.use),
                           ),
                         ],
                       ),
@@ -353,7 +352,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                                 size: 22, color: Colors.white),
                             const SizedBox(width: 8),
                             Text(
-                              'Đây là ${_recognizedPlant!.name}',
+                              local.thisIs + ' ${_recognizedPlant!.name}',
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,

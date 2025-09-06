@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/chat_message.dart';
 import '../../provider/diagnose_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DiagnosePage extends StatefulWidget {
   const DiagnosePage({super.key});
@@ -66,11 +67,14 @@ class _DiagnosePageState extends State<DiagnosePage> {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<DiagnoseProvider>();
+    final local = AppLocalizations.of(context)!;
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     return Scaffold(
       backgroundColor: const Color(0xff0b0f14),
       appBar: AppBar(
-        title: const Text('Plant Diagnose'),
+        title: Text(
+          local.plantDiagnose
+        ),
         backgroundColor: const Color(0xff0b0f14),
         elevation: 0,
         actions: [
@@ -238,7 +242,8 @@ class _InputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hint = 'Nhập câu hỏi hoặc chụp ảnh để chẩn đoán...';
+    final local = AppLocalizations.of(context)!;
+    final hint = local.enterAskorTake;
     return Container(
       color: const Color(0xff0f151d),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -246,13 +251,13 @@ class _InputBar extends StatelessWidget {
         children: [
           _IconBtn(
             icon: Icons.photo_camera,
-            tooltip: 'Chụp ảnh',
+            tooltip: local.takePhoto,
             onTap: sending ? null : onTakePhoto,
           ),
           const SizedBox(width: 6),
           _IconBtn(
             icon: Icons.photo,
-            tooltip: 'Chọn ảnh',
+            tooltip: local.choosePhoto,
             onTap: sending ? null : onPickGallery,
           ),
           const SizedBox(width: 8),
@@ -281,7 +286,7 @@ class _InputBar extends StatelessWidget {
           const SizedBox(width: 8),
           _IconBtn(
             icon: sending ? Icons.hourglass_top_rounded : Icons.send,
-            tooltip: 'Gửi',
+            tooltip: local.send,
             onTap: sending ? null : onSendText,
             activeColor: const Color(0xff2ecc71),
           ),
