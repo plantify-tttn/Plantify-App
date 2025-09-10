@@ -15,6 +15,8 @@ class RouterName {
   static const String search = 'search';
   static const String detailPlant = 'detailPlant';
   static const String detailDisease = 'detailDisease';
+  static const String searchDetailPlant = 'searchDetailPlant';
+  static const String searchDetailDisease = 'searchDetailDisease';
   static const String comment = 'comment';
   static const String createPost = 'createPost';
   static const String userProfile = 'userProfile';

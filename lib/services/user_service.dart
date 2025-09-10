@@ -126,69 +126,70 @@ class UserService {
   }
 
   /// Cập nhật profile (không gửi accessToken trong body)
-  Future<UserModel> updateProfile({
-    required String token,
-    String? name,
-    String? email,
-    File? file,
-  }) async {
-    final url = Uri.parse('$baseUrl/auth/update-profile');
-    http.Response res;
+  Future<UpdateProfileResult> updateProfile({
+  required String token,
+  String? name,
+  String? email,
+  File? file,
+}) async {
+  print('=== u: $name, e: $email, f: $file');
+  final url = Uri.parse('$baseUrl/auth/update-profile');
+  http.Response res;
 
-    if (file != null) {
-      // ===== Multipart (có file) =====
-      final req = http.MultipartRequest('PUT', url);
+  if (file != null) {
+    final req = http.MultipartRequest('PUT', url);
+    if (name != null && name.isNotEmpty) req.fields['username'] = name;
+    if (email != null && email.isNotEmpty) req.fields['email'] = email;
 
-      if (name != null && name.isNotEmpty) req.fields['name'] = name;
-      if (email != null && email.isNotEmpty) req.fields['email'] = email;
+    req.files.add(await http.MultipartFile.fromPath(
+      'image',
+      file.path,
+      filename: p.basename(file.path),
+    ));
 
-      // Tên field file đổi cho đúng với BE (vd: 'avatar' / 'image' / 'file')
-      req.files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          file.path,
-          filename: p.basename(file.path),
-        ),
-      );
+    req.headers['Authorization'] = 'Bearer $token';
+    req.headers['Accept'] = 'application/json';
 
-      req.headers['Authorization'] = 'Bearer $token';
-      req.headers['Accept'] = 'application/json';
+    final streamed = await req.send();
+    res = await http.Response.fromStream(streamed);
+  } else {
+    final body = <String, dynamic>{};
+    if (name != null && name.isNotEmpty) body['username'] = name;
+    if (email != null && email.isNotEmpty) body['email'] = email;
 
-      final streamed = await req.send();
-      res = await http.Response.fromStream(streamed);
-    } else {
-      // ===== JSON (không có file) =====
-      final body = <String, dynamic>{};
-      if (name != null && name.isNotEmpty) body['name'] = name;
-      if (email != null && email.isNotEmpty) body['email'] = email;
-
-      res = await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(body),
-      );
-    }
-
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      final imageUrl = await getImagesByToken(); // String? now
-
-      await hiveUpsertUserPartial(
-        name: name,
-        imageUrl: imageUrl,   // nullable → hàm sẽ bỏ qua nếu null/rỗng
-        email: email,
-        accessToken: token,
-      );
-    }
-    final user = hiveGetUser();
-    return user!;
+    res = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
   }
 
+  final ok = res.statusCode >= 200 && res.statusCode < 300;
+
+  if (ok) {
+    final imageUrl = await getImagesByToken();
+    await hiveUpsertUserPartial(
+      name: name,
+      imageUrl: imageUrl,
+      email: email,
+      accessToken: token,
+    );
+  }
+
+  final user = hiveGetUser();
+  if (user == null) {
+    throw Exception('No local user after update');
+  }
+
+  return UpdateProfileResult(ok: ok, user: user);
+}
+
   /// One-shot: nếu có chọn ảnh mới -> upload, rồi update profile
-  Future<UserModel> updateProfileWithOptionalAvatar({
+  Future<UpdateProfileResult> updateProfileWithOptionalAvatar({
     String? name,
     String? email,
     File? newAvatar,
@@ -338,4 +339,11 @@ class JwtUtil {
       return false;
     }
   }
+}
+
+
+class UpdateProfileResult {
+  final bool ok;
+  final UserModel user;
+  UpdateProfileResult({required this.ok, required this.user});
 }

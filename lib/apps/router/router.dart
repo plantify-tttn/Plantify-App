@@ -89,22 +89,38 @@ class RouterCustom {
             },
             routes: <RouteBase>[
               GoRoute(
-                path: '/detailPlat',
-                name: RouterName.detailPlant,
+                path: '/search/detailPlat',
+                name: RouterName.searchDetailPlant,
                 builder: (BuildContext context, GoRouterState state) {
                   final plant = state.extra as PlantModel;
                   return PlantDetailPage(plant: plant);
                 },
               ),
               GoRoute(
-                path: '/detailDisease',
-                name: RouterName.detailDisease,
+                path: '/search/detailDisease',
+                name: RouterName.searchDetailDisease,
                 builder: (BuildContext context, GoRouterState state) {
                   final disease = state.extra as DiseaseModel;
                   return DiseasesPage(disease: disease);
                 },
               ),
             ]
+          ),
+          GoRoute(
+            path: '/detailPlat',
+            name: RouterName.detailPlant,
+            builder: (BuildContext context, GoRouterState state) {
+              final plant = state.extra as PlantModel;
+              return PlantDetailPage(plant: plant);
+            },
+          ),
+          GoRoute(
+            path: '/detailDisease',
+            name: RouterName.detailDisease,
+            builder: (BuildContext context, GoRouterState state) {
+              final disease = state.extra as DiseaseModel;
+              return DiseasesPage(disease: disease);
+            },
           ),
           GoRoute(
             path: '/comment',

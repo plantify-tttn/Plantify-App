@@ -38,7 +38,7 @@ class TrendingDisease extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => context.goNamed(RouterName.detailDisease, extra: disease),
+        onTap: () => context.goNamed(RouterName.searchDetailDisease, extra: disease),
         child: Container(
           height: 200,
           decoration: BoxDecoration(

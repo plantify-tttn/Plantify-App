@@ -45,7 +45,7 @@ class ResultPlanSearch extends StatelessWidget {
                       imageUrl: img,
                       fallbackIcon: Icons.eco_rounded,
                       onTap: () => context.goNamed(
-                        RouterName.detailPlant,
+                        RouterName.searchDetailPlant,
                         extra: item,
                       ),
                     );

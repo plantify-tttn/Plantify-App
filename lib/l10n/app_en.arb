@@ -82,5 +82,9 @@
   "haveAccount": "Allredy have an account?",
   "registerSuccess": "Register success",
   "goToLogin": "Have you go to login?",
-  "goLogin": "Login"
+  "goLogin": "Login",
+  "history": "History",
+  "detect": "Detect",
+  "unDetect": "Undetect",
+  "detectHistory": "Detect History"
 }

@@ -35,7 +35,7 @@ class TrendingPlant extends StatelessWidget {
       elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => context.goNamed(RouterName.detailPlant, extra: plant),
+        onTap: () => context.goNamed(RouterName.searchDetailPlant, extra: plant),
         child: Container(
           height: 200,
           decoration: BoxDecoration(

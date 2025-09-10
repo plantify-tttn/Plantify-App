@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:plantify/models/history_model.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/services/post_service.dart';
 import 'package:plantify/services/user_service.dart';
@@ -16,7 +17,9 @@ class PostProvider extends ChangeNotifier {
   final List<PostModel> _listedPost = [];
   List<PostModel> get listedPost => _listedPost;
   final List<PostModel> _ulistedPost = [];
+  final List<HistoryModel> _history = [];
   List<PostModel> get ulistedPost => _ulistedPost;
+  List<HistoryModel> get history => _history;
   final List<PostModel> _posts = [];
   int _currentPage = 1;
   bool _isLoadingMore = false;
@@ -58,6 +61,19 @@ class PostProvider extends ChangeNotifier {
       final token = UserService.getToken();
       final data = await _service.fetchUPosts(token: token);
       _ulistedPost
+        ..clear()
+        ..addAll(data);
+      notifyListeners();
+    } finally {
+    }
+  }
+  Future<void> getHistory({
+    bool force = false
+  }) async {
+    try{
+      final token = UserService.getToken();
+      final data = await _service.fetchHistory(token: token);
+      _history
         ..clear()
         ..addAll(data);
       notifyListeners();

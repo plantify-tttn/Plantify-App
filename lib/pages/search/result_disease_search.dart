@@ -47,7 +47,7 @@ class ResultDiseaseSearch extends StatelessWidget {
                       imageUrl: img,
                       fallbackIcon: Icons.medical_information_rounded,
                       onTap: () => context.goNamed(
-                        RouterName.detailDisease,
+                        RouterName.searchDetailDisease,
                         extra: item,
                       ),
                     );

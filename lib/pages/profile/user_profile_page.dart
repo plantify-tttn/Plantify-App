@@ -2,8 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plantify/models/user_model.dart';
+import 'package:plantify/provider/user_vm.dart';
+import 'package:plantify/services/plants_service.dart';
 import 'package:plantify/services/user_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -16,11 +19,35 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtl = TextEditingController();
   final _emailCtl = TextEditingController();
+  late String _nameCurrent;
+  late String _emailCurrent;
   final _picker = ImagePicker();
 
   UserModel? _user;
   File? _localAvatar; // ảnh chọn từ máy
   bool _saving = false;
+
+  bool _canSave = false;
+
+  void _recomputeCanSave() {
+    final newName = _nameCtl.text.trim();
+    final newEmail = _emailCtl.text.trim();
+
+    final changedName = newName != (_nameCurrent);
+    final changedEmail = newEmail != (_emailCurrent);
+    final changedAvatar = _localAvatar != null;
+
+    // validator nhanh giống form
+    final validName = newName.isNotEmpty;
+    final validEmail =
+        RegExp(r'^[\w\.\-]+@[\w\-]+\.[\w\.\-]+$').hasMatch(newEmail);
+
+    final next = (changedName || changedEmail || changedAvatar) &&
+        validName &&
+        validEmail &&
+        !_saving;
+    if (next != _canSave) setState(() => _canSave = next);
+  }
 
   @override
   void initState() {
@@ -28,12 +55,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
     _user = UserService.hiveGetUser();
     if (_user != null) {
       _nameCtl.text = _user!.name;
+      _nameCurrent = _user!.name;
       _emailCtl.text = _user!.email;
+      _emailCurrent = _user!.email;
+    } else {
+      _nameCurrent = '';
+      _emailCurrent = '';
     }
+
+    _nameCtl.addListener(_recomputeCanSave);
+    _emailCtl.addListener(_recomputeCanSave);
+    // gọi 1 lần để set đúng trạng thái nút
+    _recomputeCanSave();
   }
 
   @override
   void dispose() {
+    _nameCtl.removeListener(_recomputeCanSave);
+    _emailCtl.removeListener(_recomputeCanSave);
     _nameCtl.dispose();
     _emailCtl.dispose();
     super.dispose();
@@ -93,7 +132,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                             color: Colors.black54,
                             borderRadius: BorderRadius.circular(24),
                           ),
-                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                          child: const Icon(Icons.camera_alt,
+                              color: Colors.white, size: 20),
                         ),
                       ),
                     ),
@@ -110,8 +150,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     prefixIcon: const Icon(Icons.person_outline),
                     border: const OutlineInputBorder(),
                   ),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty) ? local.nameRequired : null, // Đa ngữ
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? local.nameRequired
+                      : null, // Đa ngữ
                 ),
                 const SizedBox(height: 16),
 
@@ -127,7 +168,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   validator: (v) {
                     final t = v?.trim() ?? '';
                     if (t.isEmpty) return local.emailRequired; // Đa ngữ
-                    final ok = RegExp(r'^[\w\.\-]+@[\w\-]+\.[\w\.\-]+$').hasMatch(t);
+                    final ok =
+                        RegExp(r'^[\w\.\-]+@[\w\-]+\.[\w\.\-]+$').hasMatch(t);
                     return ok ? null : local.emailInvalid; // Đa ngữ
                   },
                 ),
@@ -138,11 +180,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: _saving ? null : _save,
+                    onPressed: _canSave ? _save : null,
                     child: _saving
                         ? const SizedBox(
-                            height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text(local.saveChanges), // Đa ngữ
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : Text(local.saveChanges),
                   ),
                 ),
               ],
@@ -174,7 +218,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   imageQuality: 85,
                   maxWidth: 2000,
                 );
-                if (x != null) setState(() => _localAvatar = File(x.path));
+                if (x != null) {
+                  setState(() => _localAvatar = File(x.path));
+                  _recomputeCanSave();
+                }
               },
             ),
             ListTile(
@@ -193,7 +240,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
             if (_localAvatar != null)
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: Text(local.deleteImage, style: const TextStyle(color: Colors.red)), // Đa ngữ
+                title: Text(local.deleteImage,
+                    style: const TextStyle(color: Colors.red)), // Đa ngữ
                 onTap: () {
                   Navigator.pop(context);
                   setState(() => _localAvatar = null);
@@ -206,34 +254,55 @@ class _UserProfilePageState extends State<UserProfilePage> {
   }
 
   Future<void> _save() async {
-    final local = AppLocalizations.of(context)!;
-    if (!_formKey.currentState!.validate()) return;
+  final local = AppLocalizations.of(context)!;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _saving = true);
-    try {
-      final updated = await UserService().updateProfileWithOptionalAvatar(                          // user hiện tại trong Hive
-        name: _nameCtl.text.trim(),
-        email: _emailCtl.text.trim(),
-        newAvatar: _localAvatar,                  // File?; null nếu không đổi ảnh
-      );
+  final newName  = _nameCtl.text.trim();
+  final newEmail = _emailCtl.text.trim();
 
-      if (!mounted) return;
-      setState(() {
-        _user = updated;
-        _localAvatar = null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(local.profileUpdateSuccess)),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      if (!mounted) return;
-      print(  'Error updating profile: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${local.saveError}: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _saving = false);
-    }
+  // _nameCurrent / _emailCurrent là non-nullable -> không cần ?? ''
+  final noNameChange   = newName  == _nameCurrent;
+  final noEmailChange  = newEmail == _emailCurrent;
+  final noAvatarChange = _localAvatar == null;
+
+  if (noNameChange && noEmailChange && noAvatarChange) {
+    // tuỳ chọn: hiện toast nhẹ
+    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(local.profileUpdateNoChange)));
+    return;
   }
+
+  setState(() => _saving = true);
+  _recomputeCanSave(); // khoá nút khi đang lưu
+
+  try {
+    final updated = await UserService().updateProfileWithOptionalAvatar(
+      name:  noNameChange  ? null : newName,
+      email: noEmailChange ? null : newEmail,
+      newAvatar: _localAvatar,
+    );
+    if (!mounted) return;
+    setState(() {
+      _user = updated.user;
+      _localAvatar = null;
+      _nameCurrent  = updated.user.name;
+      _emailCurrent = updated.user.email;
+    });
+    _recomputeCanSave(); // sau khi sync xong -> nút tắt
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(local.profileUpdateSuccess)),
+    );
+    await context.read<UserVm>().getAllUsers();
+    Navigator.pop(context);
+  } catch (e) {
+    if (!mounted) return;
+    debugPrint('Error updating profile: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${local.saveError}: $e')),
+    );
+  } finally {
+    if (!mounted) return;
+    setState(() => _saving = false);
+    _recomputeCanSave();
+  }
+}
 }

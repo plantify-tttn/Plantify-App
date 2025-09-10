@@ -82,5 +82,9 @@
   "haveAccount": "Bạn đã có tài khoản?",
   "registerSuccess": "Đăng nhập thành công",
   "goToLogin": "Bạn có muốn chuyển đến trang đăng nhập không",
-  "goLogin": "Đăng nhập"
+  "goLogin": "Đăng nhập",
+  "history": "Lịch sử",
+  "detect": "Nhận diện:",
+  "unDetect": "Không nhận diện được",
+  "detectHistory": "Lịch sử nhận diện"
 }

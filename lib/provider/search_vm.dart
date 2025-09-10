@@ -5,97 +5,109 @@ import 'package:plantify/services/plants_service.dart';
 
 class SearchVm extends ChangeNotifier {
   final _searchController = TextEditingController();
+  final PlantsService _service = PlantsService(); // ✅ 1 instance
 
   TextEditingController get searchController => _searchController;
 
-  // Dữ liệu gốc (toàn bộ danh sách)
+  // Dữ liệu gốc
   List<PlantModel> _allPlanItems = [];
   List<DiseaseModel> _allDiseaseItems = [];
-
-  // Kết quả tìm kiếm (để hiển thị)
-  List<PlantModel> _filteredPlanItems = []; // Kết quả lọc
-  List<PlantModel> get filteredPlanItems => _filteredPlanItems;
-  List<DiseaseModel> _filteredDiseaseItems = []; // Kết quả lọc
-  List<DiseaseModel> get filterDiseaseItems => _filteredDiseaseItems;
   List<PlantModel> get allPlanItems => _allPlanItems;
   List<DiseaseModel> get allDiseaseItems => _allDiseaseItems;
+
+  // Kết quả tìm kiếm
+  List<PlantModel> _filteredPlanItems = [];
+  List<PlantModel> get filteredPlanItems => _filteredPlanItems;
+  List<DiseaseModel> _filteredDiseaseItems = [];
+  List<DiseaseModel> get filterDiseaseItems => _filteredDiseaseItems;
 
   bool isLoading = false;
   String? error;
 
-  // Lấy danh sách cây từ service
-  Future<void> getPlanItems() async {
+  // Lấy danh sách cây
+  Future<void> getPlanItems({bool refetch = false}) async {
     isLoading = true;
     notifyListeners();
 
-    if (PlantsService().getPlantsFromHive().isNotEmpty) {
-      _allPlanItems = PlantsService().getPlantsFromHive();
-      _filteredPlanItems = [];
-      error = null;
-    } else {
-      try {
-        final items = await PlantsService().getPlants();
+    try {
+      if (refetch) {
+        await _service.clearAllPlants(); // ✅ chờ xoá xong rồi mới fetch
+      }
+
+      final cached = _service.getPlantsFromHive();
+      if (cached.isNotEmpty) {
+        _allPlanItems = cached;
+        _filteredPlanItems = [];
+        error = null;
+      } else {
+        final items = await _service.getPlants();
         _allPlanItems = items;
         _filteredPlanItems = [];
         error = null;
-      } catch (e) {
-        error = 'Không thể tải danh sách cây';
       }
+    } catch (e) {
+      error = 'Không thể tải danh sách cây';
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-    isLoading = false;
-    notifyListeners();
   }
 
-  Future<void> getDiseaseItems() async {
+  // Lấy danh sách bệnh
+  Future<void> getDiseaseItems({bool refetch = false}) async {
     isLoading = true;
     notifyListeners();
 
-    if (PlantsService().getDiseaseFromHive().isNotEmpty) {
-      _allDiseaseItems = PlantsService().getDiseaseFromHive();
-      _filteredDiseaseItems = [];
-      error = null;
-    } else {
-      try {
-        final items = await PlantsService().getDisease();
+    try {
+      if (refetch) {
+        await _service.clearAllDiseases(); // ✅ chờ xoá xong
+      }
+
+      final cached = _service.getDiseaseFromHive();
+      if (cached.isNotEmpty) {
+        _allDiseaseItems = cached;
+        _filteredDiseaseItems = [];
+        error = null;
+      } else {
+        final items = await _service.getDisease();
         _allDiseaseItems = items;
         _filteredDiseaseItems = [];
         error = null;
-      } catch (e) {
-        error = 'Không thể tải danh sách cây';
       }
+    } catch (e) {
+      error = 'Không thể tải danh sách bệnh';
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-    isLoading = false;
-    notifyListeners();
   }
 
-  // Hàm tìm kiếm
+  // Tìm kiếm
   void search(String query, BuildContext context) {
-    final locale = Localizations.localeOf(context); // ✅ Lấy locale hiện tại
+    final locale = Localizations.localeOf(context);
 
-    if (query.isEmpty) {
+    if (query.trim().isEmpty) {
       _filteredPlanItems = [];
       _filteredDiseaseItems = [];
     } else {
-      String nameToCheckPlan;
-      String nameToCheckDisease;
+      final q = query.trim().toLowerCase();
+
       _filteredPlanItems = _allPlanItems.where((item) {
-        nameToCheckPlan = locale.languageCode == 'vi' ? item.name : item.nameEn;
-
-        return nameToCheckPlan
-            .toLowerCase()
-            .contains(query.trim().toLowerCase());
+        final vi = (item.name).toLowerCase();
+        final en = (item.nameEn).toLowerCase();
+        final target = locale.languageCode == 'vi' ? vi : en;
+        return target.contains(q);
       }).toList();
-      _filteredDiseaseItems = _allDiseaseItems.where((item) {
-        nameToCheckDisease =
-            locale.languageCode == 'vi' ? item.name : item.nameEn;
 
-        return nameToCheckDisease
-            .toLowerCase()
-            .contains(query.trim().toLowerCase());
+      _filteredDiseaseItems = _allDiseaseItems.where((item) {
+        final vi = (item.name).toLowerCase();
+        final en = (item.nameEn ).toLowerCase();
+        final target = locale.languageCode == 'vi' ? vi : en;
+        return target.contains(q);
       }).toList();
     }
 
-    notifyListeners(); // Cập nhật UI
+    notifyListeners();
   }
 
   // Gọi khi dispose màn hình

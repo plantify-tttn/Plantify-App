@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive/hive.dart' show Hive;
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
+import 'package:plantify/models/history_model.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/services/user_service.dart';
 
@@ -72,6 +73,31 @@ class PostService {
         .map<PostModel>((e) => PostModel.fromJson(e as Map<String, dynamic>))
         .toList();
     return posts;
+  }
+
+  Future<List<HistoryModel>> fetchHistory({
+    required String token, // truyền token nếu có
+  }) async {
+    final uri = Uri.parse('$baseUrl/upload/user-history');
+
+    final headers = <String, String>{
+      'Accept': 'application/json',
+      if (token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      return [];
+    }
+
+    // API trả về mảng trong field "data" (không phải "posts")
+    final rawList = jsonDecode(response.body) as List;
+
+    final his = rawList
+        .map<HistoryModel>((e) => HistoryModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return his;
   }
 
   /// Gọi API để cập nhật Hive trong nền

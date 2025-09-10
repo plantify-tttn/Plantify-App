@@ -22,14 +22,13 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-
     _focusNode = FocusNode();
 
-    // Delay 1 frame để context sẵn sàng trước khi gọi focus
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SearchVm>(context, listen: false).getPlanItems();
-      Provider.of<SearchVm>(context, listen: false).getDiseaseItems();
-      _focusNode.requestFocus(); // Tự động bật bàn phím
+      final vm = context.read<SearchVm>();
+      vm.getPlanItems();
+      vm.getDiseaseItems();
+      _focusNode.requestFocus();
     });
   }
 
@@ -44,62 +43,74 @@ class _SearchPageState extends State<SearchPage> {
     return Consumer<SearchVm>(
       builder: (context, searchVm, child) {
         return Scaffold(
-          body: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 45),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        context.pop();
-                      },
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                    Expanded(
-                      child: SearchField(
+          body: RefreshIndicator(
+            onRefresh: () async {
+              final vm = context.read<SearchVm>();
+              await Future.wait([
+                vm.getPlanItems(refetch: true),     // nếu có tham số force thì truyền vào
+                vm.getDiseaseItems(refetch: true),
+              ]);
+              // Nếu bạn muốn lọc lại theo text hiện tại:
+              final q = searchVm.searchController.text;
+              if (q.isNotEmpty) {
+                vm.search(q, context);
+              }
+            },
+            child: SingleChildScrollView(
+              // ✅ Đảm bảo luôn kéo được để hiện RefreshIndicator
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  const SizedBox(height: 45),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => context.pop(),
+                        icon: const Icon(Icons.arrow_back),
+                      ),
+                      Expanded(
+                        child: SearchField(
                           controller: searchVm.searchController,
-                          focusNode: _focusNode, // Truyền vào ô tìm kiếm
-                          onChanged: (value) {
-                            searchVm.search(value, context);
-                          }),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                ResultPlanSearch(
-                  listItems: searchVm.filteredPlanItems,
-                  searchController: searchVm.searchController,
-                ),
-                ResultDiseaseSearch(
-                  listItems: searchVm.filterDiseaseItems,
-                  searchController: searchVm.searchController,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppLocalizations.of(context)!.trendingPlants,
-                      style: TextStyle(fontSize: 20),
+                          focusNode: _focusNode,
+                          onChanged: (value) => searchVm.search(value, context),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  ResultPlanSearch(
+                    listItems: searchVm.filteredPlanItems,
+                    searchController: searchVm.searchController,
+                  ),
+                  ResultDiseaseSearch(
+                    listItems: searchVm.filterDiseaseItems,
+                    searchController: searchVm.searchController,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        AppLocalizations.of(context)!.trendingPlants,
+                        style: const TextStyle(fontSize: 20),
+                      ),
                     ),
                   ),
-                ),
-                TrendingPlant(
-                  listItems: searchVm.allPlanItems,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppLocalizations.of(context)!.trendingDisease,
-                      style: TextStyle(fontSize: 20),
+                  TrendingPlant(listItems: searchVm.allPlanItems),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        AppLocalizations.of(context)!.trendingDisease,
+                        style: const TextStyle(fontSize: 20),
+                      ),
                     ),
                   ),
-                ),
-                TrendingDisease(listItems: searchVm.allDiseaseItems)
-              ],
+                  TrendingDisease(listItems: searchVm.allDiseaseItems),
+                  const SizedBox(height: 24), // thêm tí khoảng trống cho đẹp
+                ],
+              ),
             ),
           ),
         );

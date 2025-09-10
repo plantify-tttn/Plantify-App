@@ -56,6 +56,15 @@ class PlantsService {
     final box = Hive.box<DiseaseModel>('diseases');
     return box.values.toList();
   }
+  Future<void> clearAllPlants() async {
+    final box = Hive.box<PlantModel>('plants');
+    await box.clear(); // xoá sạch box plants
+  }
+
+  Future<void> clearAllDiseases() async {
+    final box = Hive.box<DiseaseModel>('diseases');
+    await box.clear(); // xoá sạch box diseases
+  }
 
   /// Lưu danh sách vào Hive
   Future<void> savePlantsToHive(List<PlantModel> plants) async {

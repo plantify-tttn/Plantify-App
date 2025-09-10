@@ -153,7 +153,7 @@ class LoginPage extends StatelessWidget {
                             context.goNamed(RouterName.home);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(ok)),
+                              SnackBar(content: Text("Tài khoản hoặc mật khẩu không dúng")),
                             );
                           }
                         },

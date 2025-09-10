@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/l10n/locale_provider.dart';
+import 'package:plantify/pages/profile/history_page.dart';
 import 'package:plantify/pages/profile/user_post_page.dart';
 import 'package:plantify/pages/profile/user_profile_page.dart';
 import 'package:plantify/services/user_service.dart';
@@ -98,6 +99,30 @@ class ProfilePage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const UserProfilePage()),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // 📌 Nút OutlinedButton: History
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.timer_sharp, color: Color.fromARGB(255, 175, 76, 168)),
+              label: Text(
+                local.history,
+                style: TextStyle(color: const Color.fromARGB(255, 175, 76, 168)),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color.fromARGB(255, 167, 76, 175), width: 1.2),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HistoryPage()),
                 );
               },
             ),
@@ -243,9 +268,6 @@ class ProfilePage extends StatelessWidget {
               trailing: currentLocale.languageCode == 'en'
                   ? const Icon(Icons.check, color: Colors.blue)
                   : null,
-              tileColor: currentLocale.languageCode == 'en'
-                  ? Colors.blue[100]
-                  : null,
               onTap: () {
                 localeProvider.setLocale(const Locale('en'));
                 Navigator.pop(context);
@@ -255,9 +277,6 @@ class ProfilePage extends StatelessWidget {
               title: const Text('Tiếng Việt'),
               trailing: currentLocale.languageCode == 'vi'
                   ? const Icon(Icons.check, color: Colors.blue)
-                  : null,
-              tileColor: currentLocale.languageCode == 'vi'
-                  ? Colors.blue[100]
                   : null,
               onTap: () {
                 localeProvider.setLocale(const Locale('vi'));

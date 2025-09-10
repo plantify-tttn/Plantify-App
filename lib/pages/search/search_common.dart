@@ -9,7 +9,6 @@ class ResultContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
       elevation: 0,
       borderRadius: BorderRadius.circular(14),
       child: Container(
