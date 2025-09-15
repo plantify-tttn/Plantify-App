@@ -6,6 +6,7 @@ import 'package:plantify/l10n/locale_provider.dart';
 import 'package:plantify/pages/my_app.dart';
 import 'package:plantify/provider/diagnose_provider.dart';
 import 'package:plantify/provider/post_provider.dart';
+import 'package:plantify/provider/records_provider.dart';
 import 'package:plantify/provider/search_vm.dart';
 import 'package:plantify/provider/user_vm.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +33,8 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => UserVm()..init(), lazy: false,),
         ChangeNotifierProvider(create: (_) => PostProvider()),
         ChangeNotifierProvider(create: (_) => DiagnoseProvider()),
-        ChangeNotifierProvider(create: (_) => SearchVm())
+        ChangeNotifierProvider(create: (_) => SearchVm()),
+        ChangeNotifierProvider(create: (_) => RecordsProvider())
       ],
       child: const MyApp(),
     ),

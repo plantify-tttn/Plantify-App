@@ -2,8 +2,11 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:plantify/models/chat_message.dart';
 import 'package:plantify/models/comment_model.dart';
 import 'package:plantify/models/disease_model.dart';
+import 'package:plantify/models/favorite_model.dart';
+import 'package:plantify/models/history_model.dart';
 import 'package:plantify/models/plants_model.dart';
 import 'package:plantify/models/post_model.dart';
+import 'package:plantify/models/record_model.dart';
 import 'package:plantify/models/user_model.dart';
 
 Future<void> initHive() async {
@@ -21,7 +24,9 @@ Future<void> initHive() async {
     () => Hive.registerAdapter(PlantModelAdapter()),
     () => Hive.registerAdapter(CommentModelAdapter()),
     () => Hive.registerAdapter(DiseaseModelAdapter()),
-    () => Hive.registerAdapter(ChatMessageAdapter())
+    () => Hive.registerAdapter(ChatMessageAdapter()),
+    () => Hive.registerAdapter(HistoryModelAdapter()),
+    () => Hive.registerAdapter(RecordModelAdapter()),
     // () => Hive.registerAdapter(DiseaseModelAdapter()),
   ];
 
@@ -37,7 +42,9 @@ Future<void> initHive() async {
     () => Hive.openBox<CommentModel>('comments'),
     () => Hive.openBox<DiseaseModel>('diseases'),
     () => Hive.openBox<String>('favourites'),
-    () => Hive.openBox<ChatMessage>("diagnose_messages")
+    () => Hive.openBox<ChatMessage>("diagnose_messages"),
+    () => Hive.openBox<HistoryModel>("history_detect"),
+    () => Hive.openBox<RecordModel>("records_box"),
     // () => Hive.openBox<DiseaseModel>('diseaseBox'),
   ];
 

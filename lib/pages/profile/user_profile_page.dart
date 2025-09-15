@@ -281,6 +281,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       newAvatar: _localAvatar,
     );
     if (!mounted) return;
+    await context.read<UserVm>().getAllUsers();
     setState(() {
       _user = updated.user;
       _localAvatar = null;

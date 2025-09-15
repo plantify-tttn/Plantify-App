@@ -73,7 +73,10 @@ class _DiagnosePageState extends State<DiagnosePage> {
       backgroundColor: const Color(0xff0b0f14),
       appBar: AppBar(
         title: Text(
-          local.plantDiagnose
+          local.plantDiagnose,
+          style: TextStyle(
+            color: Colors.white
+          ),
         ),
         backgroundColor: const Color(0xff0b0f14),
         elevation: 0,

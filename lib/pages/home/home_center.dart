@@ -4,6 +4,7 @@ import 'package:plantify/pages/diagnose/diagnose_page.dart';
 import 'package:plantify/pages/home/home_page.dart';
 import 'package:plantify/pages/identify/identify_page.dart';
 import 'package:plantify/pages/profile/profile_page.dart';
+import 'package:plantify/pages/records/records_page.dart';
 
 class HomeCenter extends StatefulWidget {
   const HomeCenter({super.key,});
@@ -19,6 +20,7 @@ class _HomeCenterState extends State<HomeCenter> {
     HomePage(),
     DiagnosePage(),
     IdentifyPage(),
+    RecordsPage(),
     ProfilePage(),
   ];
 
@@ -51,6 +53,7 @@ class _HomeCenterState extends State<HomeCenter> {
             Image(image: AssetImage('assets/images/home2.png'), width: 30, height: 30),
             Image(image: AssetImage('assets/images/diagnose2.png'), width: 30, height: 30),
             Image(image: AssetImage('assets/images/identify2.png'), width: 30, height: 30),
+            Image(image: AssetImage('assets/images/records2.png'), width: 30, height: 30),
             Image(image: AssetImage('assets/images/profile2.png'), width: 30, height: 30),
           ],
           onTap: (index) => setState(() => _selectedIndex = index),

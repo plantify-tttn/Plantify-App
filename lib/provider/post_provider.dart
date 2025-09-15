@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:plantify/models/history_model.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/services/post_service.dart';
@@ -14,6 +15,7 @@ class PostProvider extends ChangeNotifier {
   String _uKey(int page) => 'p=$page';
 
   final _service = PostService();
+  final Box<HistoryModel> _historyBox = Hive.box<HistoryModel>('history_detect');
   final List<PostModel> _listedPost = [];
   List<PostModel> get listedPost => _listedPost;
   final List<PostModel> _ulistedPost = [];
@@ -67,18 +69,27 @@ class PostProvider extends ChangeNotifier {
     } finally {
     }
   }
-  Future<void> getHistory({
-    bool force = false
-  }) async {
-    try{
-      final token = UserService.getToken();
-      final data = await _service.fetchHistory(token: token);
+  Future<void> getHistory({bool force = false}) async {
+    if (!force && _historyBox.isNotEmpty) {
+      final offline = _historyBox.values.toList(growable: false);
       _history
         ..clear()
-        ..addAll(data);
+        ..addAll(offline);
       notifyListeners();
-    } finally {
     }
+    try {
+      final token = UserService.getToken();
+      final fresh = await _service.fetchHistory(token: token); 
+      await _historyBox.clear();
+      for (var i = 0; i < fresh.length; i++) {
+        final key = (fresh[i].id.isNotEmpty ? fresh[i].id : 'h_$i');
+        await _historyBox.put(key, fresh[i]);
+      }
+      _history
+        ..clear()
+        ..addAll(fresh);
+      notifyListeners();
+    } finally {}
   }
   Future<void> loadMorePost() async{
     if (!hasMore || isLoadingMore) return;

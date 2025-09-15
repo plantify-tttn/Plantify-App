@@ -14,30 +14,39 @@ class _PostListState extends State<PostList> {
   @override
   Widget build(BuildContext context) {
     return Consumer<PostProvider>(
-      builder: (context, postProvider, child){
+      builder: (context, postProvider, child) {
+        final items = postProvider.listedPost;
+        final showFooter = postProvider.isLoadingMore || !postProvider.hasMore;
+
         return ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           padding: EdgeInsets.zero,
-          itemCount: postProvider.listedPost.length + (postProvider.isLoadingMore || !postProvider.hasMore ? 1 : 0),
-          itemBuilder: (context, index){
-            final len = postProvider.listedPost.length;
-            if (index == len) {
+          itemCount: items.length + (showFooter ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == items.length) {
               if (postProvider.isLoadingMore) {
-                return CircularProgressIndicator();
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
               }
               if (!postProvider.hasMore) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(child: Text('No more post')),
                 );
               }
             }
-            final post = postProvider.listedPost[index];
-            return PostLayout(post: post,);
-          }
+
+            final post = items[index];
+            return PostLayout(
+              key: ValueKey(post.id),
+              post: post,
+            );
+          },
         );
-      }
+      },
     );
   }
 }
