@@ -22,7 +22,7 @@ class RecordModelAdapter extends TypeAdapter<RecordModel> {
       image: fields[2] as String,
       userId: fields[3] as int,
       createdAt: fields[4] as DateTime,
-      history: (fields[5] as List).cast<HistoryModel>(),
+      history: (fields[5] as List).cast<String>(),
     );
   }
 

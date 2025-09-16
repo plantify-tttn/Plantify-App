@@ -2,7 +2,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:plantify/models/analysis_result.dart';
 import 'package:plantify/models/record_model.dart';
+import 'package:plantify/models/record_timeline_item.dart';
 
 class RecordsService {
   RecordsService({http.Client? client}) : _client = client ?? http.Client();
@@ -40,13 +42,63 @@ class RecordsService {
     required String recordId,
     required List<String> historyIds,
   }) async {
-    final r = await _client.post(
-      Uri.parse('$_base/tracking/$recordId'),
-      headers: _headers(token),
+    final url = Uri.parse('$_base/tracking/$recordId');
+    final res = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
       body: jsonEncode({'history': historyIds}),
     );
-    if (r.statusCode != 200 && r.statusCode != 201 && r.statusCode != 204) {
-      throw Exception('HTTP ${r.statusCode}: ${r.body}');
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('Attach history failed: ${res.statusCode} ${res.body}');
     }
+  }
+
+  Future<List<RecordTimelineItem>> fetchTimeline({
+    required String token,
+    required String recordId,
+  }) async {
+    final url = Uri.parse('$_base/tracking/$recordId');
+    final res = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('fetchTimeline ${res.statusCode}: ${res.body}');
+    }
+    final body = jsonDecode(res.body);
+    if (body is! List) return const [];
+    final list = body
+        .whereType<Map<String, dynamic>>()
+        .map((e) => RecordTimelineItem.fromJson(e))
+        .toList();
+
+    // mới nhất trước
+    list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  Future<AnalysisResult> analyzeRecord({
+    required String token,
+    required String recordId,
+  }) async {
+    final url = Uri.parse('$_base/chatbot/analyze/$recordId');
+    final res = await http.post(url, headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    });
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      throw Exception('analyzeRecord ${res.statusCode}: ${res.body}');
+    }
+    final body = jsonDecode(res.body);
+    if (body is! Map<String, dynamic>) {
+      throw Exception('Invalid analyze payload');
+    }
+    return AnalysisResult.fromJson(body);
   }
 }
