@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:plantify/models/analysis_result.dart';
 import 'package:plantify/models/record_model.dart';
-import 'package:plantify/models/record_timeline_item.dart'; // 👈 model timeline
+import 'package:plantify/models/record_timeline_item.dart';
 import 'package:plantify/provider/records_provider.dart';
 import 'package:plantify/provider/search_vm.dart';
 import 'package:provider/provider.dart';
+
+// dùng để lấy danh sách history & l10n (hiển thị label/ảnh)
+import 'package:plantify/provider/post_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RecordDetailPage extends StatefulWidget {
@@ -21,24 +24,23 @@ class RecordDetailPage extends StatefulWidget {
 class _RecordDetailPageState extends State<RecordDetailPage> {
   final _dateFmt = DateFormat('yyyy-MM-dd HH:mm');
 
+  // NGƯỠNG LỊCH SỬ TỐI THIỂU ĐỂ PHÂN TÍCH
+  static const int _minHistoryForAnalysis = 2;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // nếu cần vẫn nạp plant/disease để dùng tên bản địa hoá (tùy bạn)
       final vm = context.read<SearchVm>();
       vm.getPlanItems();
       vm.getDiseaseItems();
-
-      // 🔑 nạp timeline theo recordId
       await context.read<RecordsProvider>().loadTimeline(widget.record.id);
     });
   }
 
   void _showAnalysisSheet(BuildContext context, AnalysisResult a) {
     final theme = Theme.of(context);
-    final lines =
-        a.timeline.split('\n').where((e) => e.trim().isNotEmpty).toList();
+    final lines = a.timeline.split('\n').where((e) => e.trim().isNotEmpty).toList();
 
     showModalBottomSheet(
       context: context,
@@ -55,12 +57,10 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  Icon(Icons.analytics_outlined,
-                      color: theme.colorScheme.primary),
+                  Icon(Icons.analytics_outlined, color: theme.colorScheme.primary),
                   const SizedBox(width: 8),
                   Text('Kết luận AI',
-                      style: theme.textTheme.titleLarge
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
                 ]),
                 const SizedBox(height: 12),
                 if (lines.isNotEmpty) ...[
@@ -102,6 +102,35 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
   }
 
+  // ===== Thêm lịch sử bằng bottom-sheet (đã đánh dấu các mục đã gắn) =====
+  Future<void> _onAddHistory(BuildContext context, RecordModel r) async {
+    // truyền danh sách history đã có của record để sheet đánh dấu sẵn
+    final picks = await showModalBottomSheet<Set<String>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _HistoryPickerSheet(alreadySelected: r.history.toSet()),
+    );
+
+    if (picks == null || picks.isEmpty) return;
+
+    try {
+      await context.read<RecordsProvider>().attachHistories(
+            recordId: r.id,
+            historyIds: picks.toList(), // chỉ các mục mới
+          );
+      if (!mounted) return;
+      await context.read<RecordsProvider>().loadTimeline(r.id, refresh: true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Đã gắn ${picks.length} lịch sử vào hồ sơ')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gắn lịch sử thất bại: $e')),
+      );
+    }
+  }
+
   Widget _thumb(String url) {
     final img = url.startsWith('http')
         ? Image.network(
@@ -132,19 +161,18 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
   @override
   Widget build(BuildContext context) {
     final pv = context.watch<RecordsProvider>();
-    final local = AppLocalizations.of(context)!;
-
-    // luôn lấy bản record mới nhất nếu có
     final r = pv.getById(widget.record.id) ?? widget.record;
 
     final isLoading = pv.timelineLoading(r.id);
     final List<RecordTimelineItem> items = pv.timelineOf(r.id);
 
+    final canAnalyze = items.length >= _minHistoryForAnalysis;
+    final lacking = (_minHistoryForAnalysis - items.length).clamp(0, 99);
+
     return Scaffold(
       appBar: AppBar(title: Text(r.name)),
       body: RefreshIndicator(
-        onRefresh: () =>
-            context.read<RecordsProvider>().loadTimeline(r.id, refresh: true),
+        onRefresh: () => context.read<RecordsProvider>().loadTimeline(r.id, refresh: true),
         child: isLoading && items.isEmpty
             ? const ListTile(
                 title: Center(
@@ -160,9 +188,9 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                     children: [
                       _buildRecordHeader(context, r),
                       const SizedBox(height: 12),
-                      _empty('Chưa có kết quả trong thư mục này'),
+                      _empty('Chưa có lịch sử cho hồ sơ này'),
                       const SizedBox(height: 12),
-                      _analyzeButton(context, r.id),
+                      _addHistoryButton(context, r),
                     ],
                   )
                 : ListView.separated(
@@ -176,47 +204,20 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                         final t = items[index - 1];
                         return _timelineCard(context, t);
                       }
-                      return _analyzeButton(context, r.id);
+
+                      // Footer: Thêm lịch sử + (nếu đủ) Phân tích, ngược lại hiển thị gợi ý còn thiếu
+                      return Column(
+                        children: [
+                          _addHistoryInlineButton(context, r),
+                          const SizedBox(height: 8),
+                          if (canAnalyze)
+                            _analyzeButton(context, r.id)
+                          else
+                            _hintNeedMoreHistory(lacking),
+                        ],
+                      );
                     },
                   )),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: pv.busy
-            ? null
-            : () async {
-                final src = await showModalBottomSheet<bool>(
-                  context: context,
-                  builder: (_) => SafeArea(
-                    child: Wrap(
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.photo_camera),
-                          title: Text(local.takePhoto),
-                          onTap: () => Navigator.pop(context, true),
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.photo_library),
-                          title: Text(local.choosePhoto),
-                          onTap: () => Navigator.pop(context, false),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-                if (src == null) return;
-
-                await context
-                    .read<RecordsProvider>()
-                    .addHistoryFromCameraOrGallery(
-                        recordId: r.id, fromCamera: src);
-
-                if (!mounted) return;
-                await context
-                    .read<RecordsProvider>()
-                    .loadTimeline(r.id, refresh: true);
-              },
-        icon: const Icon(Icons.add_a_photo),
-        label: Text(pv.busy ? '...' : local.takePhoto),
       ),
     );
   }
@@ -272,7 +273,6 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // chips
                   Row(
                     children: [
                       const SizedBox(width: 8),
@@ -280,7 +280,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text('Mức độ bênh: '),
+                            const Text('Mức độ bệnh: '),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 4),
@@ -299,14 +299,10 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                     ],
                   ),
                   const SizedBox(height: 8),
-
-                  // title
                   Text(title,
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 6),
-
-                  // time
                   Text(
                     _dateFmt.format(t.createdAt),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -327,6 +323,48 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         ),
       );
 
+  // ===== Buttons & Hints =====
+
+  Widget _addHistoryButton(BuildContext context, RecordModel r) {
+    return SafeArea(
+      top: false,
+      child: Align(
+        alignment: Alignment.center,
+        child: FilledButton.icon(
+          onPressed: () => _onAddHistory(context, r),
+          icon: const Icon(Icons.add_photo_alternate_outlined),
+          label: const Text('Thêm lịch sử'),
+        ),
+      ),
+    );
+  }
+
+  Widget _addHistoryInlineButton(BuildContext context, RecordModel r) {
+    return Align(
+      alignment: Alignment.center,
+      child: OutlinedButton.icon(
+        onPressed: () => _onAddHistory(context, r),
+        icon: const Icon(Icons.add),
+        label: const Text('Thêm lịch sử'),
+      ),
+    );
+  }
+
+  Widget _hintNeedMoreHistory(int lacking) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.info_outline, size: 18),
+          const SizedBox(width: 8),
+          Text('Cần tối thiểu $_minHistoryForAnalysis lịch sử để phân tích'
+              '${lacking > 0 ? ' • Thiếu $lacking' : ''}'),
+        ],
+      ),
+    );
+  }
+
   Widget _analyzeButton(BuildContext context, String recordId) {
     final p = context.watch<RecordsProvider>();
     final loading = p.analysisLoading(recordId);
@@ -334,14 +372,13 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     return SafeArea(
       top: false,
       child: Align(
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.center,
         child: FilledButton.icon(
           onPressed: loading
               ? null
               : () async {
-                  final res = await context
-                      .read<RecordsProvider>()
-                      .fetchAnalysis(recordId);
+                  final res =
+                      await context.read<RecordsProvider>().fetchAnalysis(recordId);
                   if (!mounted) return;
                   if (res == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -360,6 +397,168 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
               : const Icon(Icons.analytics_outlined),
           label: const Text('Phân tích'),
         ),
+      ),
+    );
+  }
+}
+
+// =============================
+// Bottom-sheet chọn lịch sử (đánh dấu mục đã gắn)
+// =============================
+class _HistoryPickerSheet extends StatefulWidget {
+  const _HistoryPickerSheet({required this.alreadySelected});
+  final Set<String> alreadySelected; // các history đã gắn sẵn với record
+
+  @override
+  State<_HistoryPickerSheet> createState() => _HistoryPickerSheetState();
+}
+
+class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
+  // các mục NEW user chọn thêm trong lần này (không gồm alreadySelected)
+  final Set<String> _selectedNew = {};
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<PostProvider>().getHistory();
+      context.read<SearchVm>().getDiseaseItems();
+    });
+  }
+
+  String _fmt(DateTime dt) => DateFormat('yyyy-MM-dd HH:mm').format(dt);
+
+  String _diseaseDisplayName({
+    required String label,
+    required SearchVm vm,
+    required Locale locale,
+  }) {
+    if (label.isEmpty) return '(Chưa xác định)';
+    final idx = vm.allDiseaseItems.indexWhere((t) => t.id == label);
+    if (idx != -1) {
+      return vm.allDiseaseItems[idx].localizedName(locale);
+    }
+    return label; // fallback
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final height = mq.size.height * 0.8;
+    final locale = Localizations.localeOf(context);
+    final local = AppLocalizations.of(context)!; // nếu đã gen l10n
+
+    return SizedBox(
+      height: height,
+      child: Consumer2<PostProvider, SearchVm>(
+        builder: (context, pp, vm, _) {
+          // chỉ lấy lịch sử bệnh
+          final histories = pp.history.where((h) => h.detectType != 'seed').toList();
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Chọn lịch sử phát hiện (Bệnh)'),
+              automaticallyImplyLeading: false,
+              actions: [
+                TextButton(
+                  // Trả về CHỈ các mục mới để attach
+                  onPressed: () => Navigator.pop(context, _selectedNew),
+                  child: const Text('Xong'),
+                ),
+              ],
+            ),
+            body: histories.isEmpty
+                ? const Center(child: Text('Chưa có lịch sử bệnh'))
+                : ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: histories.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final h = histories[i];
+                      final already = widget.alreadySelected.contains(h.id);
+                      final checked = already || _selectedNew.contains(h.id);
+
+                      final detectText = _diseaseDisplayName(
+                        label: h.label,
+                        vm: vm,
+                        locale: locale,
+                      );
+
+                      return Opacity(
+                        opacity: already ? 0.7 : 1.0,
+                        child: CheckboxListTile(
+                          value: checked,
+                          // nếu đã gắn rồi -> disable toggle
+                          onChanged: already
+                              ? null
+                              : (v) {
+                                  setState(() {
+                                    if (v == true) {
+                                      _selectedNew.add(h.id);
+                                    } else {
+                                      _selectedNew.remove(h.id);
+                                    }
+                                  });
+                                },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${local.detect}: $detectText',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: h.label.isEmpty ? Colors.red : null,
+                                  ),
+                                ),
+                              ),
+                              if (already)
+                                Container(
+                                  margin: const EdgeInsets.only(left: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.withOpacity(.12),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(color: Colors.green.withOpacity(.4)),
+                                  ),
+                                  child: const Text(
+                                    'ĐÃ GẮN',
+                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          subtitle: Text(
+                            _fmt(h.createdAt),
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          secondary: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              h.imageUrl,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+            bottomNavigationBar: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(context, _selectedNew),
+                  icon: const Icon(Icons.check),
+                  label: Text('Gắn thêm ${_selectedNew.length} mục vào hồ sơ'),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

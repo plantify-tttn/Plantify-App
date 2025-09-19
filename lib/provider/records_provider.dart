@@ -93,39 +93,38 @@ class RecordsProvider extends ChangeNotifier {
   }
 
   Future<void> addNew({
-  required String name,
-  String image = 'https://i.pinimg.com/736x/a1/e7/be/a1e7be1b7c3e5040d7170c01e8c62b36.jpg',
-  List<String> selectedHistoryIds = const [],
-}) async {
-  try {
-    final token = UserService.getToken();
-
-    final r = await _service.create(
-      token: token,
-      name: name.trim(),
-      image: image,
-    );
-
-    RecordModel updated = r;
-
-    if (selectedHistoryIds.isNotEmpty) {
-      await _service.attachHistory(
+    required String name,
+    String image = 'https://i.pinimg.com/736x/a1/e7/be/a1e7be1b7c3e5040d7170c01e8c62b36.jpg',
+    List<String> selectedHistoryIds = const [],
+  }) async {
+    try {
+      final token = UserService.getToken();
+      final r = await _service.create(
         token: token,
-        recordId: r.id,
-        historyIds: selectedHistoryIds,
+        name: name.trim(),
+        image: image,
       );
-      // 👉 Cập nhật local để trang detail thấy ngay
-      updated = r.copyWith(history: [...selectedHistoryIds, ...r.history]);
-    }
+      RecordModel updated = r;
+      if (selectedHistoryIds.isNotEmpty) {
+        await _service.attachHistory(
+          token: token,
+          recordId: r.id,
+          historyIds: selectedHistoryIds,
+        );
+        updated = r.copyWith(history: [...selectedHistoryIds, ...r.history]);
+      }
+      await _box.put(updated.id, updated);
+      _records = [
+        updated,
+        ..._records.where((e) => e.id != updated.id),
+      ];
 
-    await _box.put(updated.id, updated);
-    _records = _box.values.toList(growable: false);
-    _safeNotify();
-  } catch (e) {
-    _error = 'Tạo record thất bại: $e';
-    _safeNotify();
+      _safeNotify();
+    } catch (e) {
+      _error = 'Tạo record thất bại: $e';
+      _safeNotify();
+    }
   }
-}
 
   Future<String?> addHistoryFromCameraOrGallery({
   required String recordId,
@@ -208,6 +207,42 @@ class RecordsProvider extends ChangeNotifier {
     } finally {
       _analysisLoading.remove(recordId);
       _safeNotify();
+    }
+  }
+  Future<void> attachHistories({
+    required String recordId,
+    required List<String> historyIds,
+  }) async {
+    if (historyIds.isEmpty) return;
+
+    try {
+      final token = UserService.getToken();
+
+      await _service.attachHistory(
+        token: token,
+        recordId: recordId,
+        historyIds: historyIds,
+      );
+
+      final current = _box.get(recordId);
+      if (current != null) {
+        final merged = <String>{
+          ...current.history,
+          ...historyIds,
+        }.toList();
+
+        final updated = current.copyWith(history: merged);
+        await _box.put(recordId, updated);
+        _records = _box.values.toList(growable: false);
+      }
+
+      await loadTimeline(recordId, refresh: true);
+
+      _safeNotify();
+    } catch (e) {
+      _error = 'Gắn lịch sử thất bại: $e';
+      _safeNotify();
+      rethrow;
     }
   }
 

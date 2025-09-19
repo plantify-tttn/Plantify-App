@@ -36,7 +36,6 @@ class RecordsService {
     return RecordModel.fromJson(Map<String,dynamic>.from(data));
   }
 
-  /// POST /tracking/{id}  { "history": ["<historyId>", ...] }
   Future<void> attachHistory({
     required String token,
     required String recordId,

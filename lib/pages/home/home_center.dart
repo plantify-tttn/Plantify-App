@@ -7,7 +7,7 @@ import 'package:plantify/pages/profile/profile_page.dart';
 import 'package:plantify/pages/records/records_page.dart';
 
 class HomeCenter extends StatefulWidget {
-  const HomeCenter({super.key,});
+  const HomeCenter({super.key});
 
   @override
   State<HomeCenter> createState() => _HomeCenterState();
@@ -17,28 +17,26 @@ class _HomeCenterState extends State<HomeCenter> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = <Widget>[
-    HomePage(),
-    DiagnosePage(),
-    IdentifyPage(),
-    RecordsPage(),
-    ProfilePage(),
+    const HomePage(),
+    const DiagnosePage(),
+    const IdentifyPage(),
+    const RecordsPage(),
+    const ProfilePage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 👇 màu nền sẽ xuất hiện dưới status bar (vì status bar trong suốt) // hoặc Theme.of(context).scaffoldBackgroundColor
       extendBody: true,
-      body: SafeArea(              // ✅ bọc body, không bọc Scaffold
+
+      // 👇 chỉ hiển thị page hiện tại
+      body: SafeArea(
         top: true,
-        bottom: false,            // để bar dưới có thể tràn, ta bọc riêng ở dưới
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        bottom: false,
+        child: _pages[_selectedIndex],
       ),
 
-      bottomNavigationBar: SafeArea( // ✅ chỉ đẩy thanh nav lên khỏi system navbar
+      bottomNavigationBar: SafeArea(
         top: false,
         child: CurvedNavigationBar(
           index: _selectedIndex,
@@ -49,7 +47,6 @@ class _HomeCenterState extends State<HomeCenter> {
           animationDuration: const Duration(milliseconds: 300),
           animationCurve: Curves.easeInOut,
           items: const [
-            // dùng const Image.asset nếu có thể để tối ưu
             Image(image: AssetImage('assets/images/home2.png'), width: 30, height: 30),
             Image(image: AssetImage('assets/images/diagnose2.png'), width: 30, height: 30),
             Image(image: AssetImage('assets/images/identify2.png'), width: 30, height: 30),
