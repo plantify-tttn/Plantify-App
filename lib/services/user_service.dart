@@ -15,7 +15,6 @@ class UserService {
   return t.isNotEmpty ? t : null;
 }
 
-  /// Lấy thông tin người dùng theo ID
   Future<UserModel> getUserById(String id) async {
     final box = Hive.box<UserModel>('userBox');
     for (final key in box.keys) {
@@ -81,10 +80,9 @@ class UserService {
                         data['image'];
 
     if (raw is String && raw.trim().isNotEmpty) return raw.trim();
-    return null; // ← không ném lỗi, để caller tự merge
+    return null; 
   }
 
-  /// Lấy danh sách tất cả người dùng
   Future<List<UserModel>> getAllUsers() async {
     final url = Uri.parse('$baseUrl/auth/all-users');
     final response = await http.get(url);
@@ -101,7 +99,6 @@ class UserService {
     }
   }
 
-  /// Cập nhật thông tin người dùng
   Future<void> updateUser(UserModel user) async {
     final url = Uri.parse('$baseUrl/users/${user.id}');
     final response = await http.put(
@@ -115,7 +112,6 @@ class UserService {
     }
   }
 
-  /// Xoá người dùng
   Future<void> deleteUser(String id) async {
     final url = Uri.parse('$baseUrl/users/$id');
     final response = await http.delete(url);
@@ -125,7 +121,6 @@ class UserService {
     }
   }
 
-  /// Cập nhật profile (không gửi accessToken trong body)
   Future<UpdateProfileResult> updateProfile({
   required String token,
   String? name,
@@ -188,7 +183,6 @@ class UserService {
   return UpdateProfileResult(ok: ok, user: user);
 }
 
-  /// One-shot: nếu có chọn ảnh mới -> upload, rồi update profile
   Future<UpdateProfileResult> updateProfileWithOptionalAvatar({
     String? name,
     String? email,
@@ -207,7 +201,6 @@ class UserService {
   static const String _boxName = 'userBox';
   static const String _userKey = 'currentUser';
 
-  // ✅ Lưu user
   static Future<void> hiveSaveUser(UserModel user) async {
     final box = Hive.box<UserModel>(_boxName);
     await box.put(_userKey, user);
@@ -220,10 +213,9 @@ class UserService {
 
   static Future<void> hiveSaveUserById(UserModel user) async {
     final box = Hive.box<UserModel>('userBox');
-    await box.put(user.id, user); // key là user.id
+    await box.put(user.id, user); 
   }
 
-  // ✅ Lấy user
   static UserModel? hiveGetUser() {
     final box = Hive.box<UserModel>(_boxName);
     return box.get(_userKey);
@@ -232,20 +224,18 @@ class UserService {
   static UserModel? hiveGetUserById(String userId) {
     final box = Hive.box<UserModel>('userBox');
     try {
-      return box.get(userId); // lấy theo key userId
+      return box.get(userId); 
     } catch (e) {
       debugPrint('❌ Lỗi khi tìm user trong Hive: $e');
       return null;
     }
   }
 
-  // ✅ Xoá user khi logout
   static Future<void> hiveDeleteUser() async {
     final box = Hive.box<UserModel>(_boxName);
     await box.delete(_userKey);
   }
 
-  // ✅ Kiểm tra đã login chưa
   static bool isLoggedIn() {
     final box = Hive.box<UserModel>(_boxName);
     return box.containsKey(_userKey);
@@ -267,13 +257,12 @@ class UserService {
     String? name,
     String? imageUrl,
     String? email,
-    String? accessToken, // có thể null nếu BE không trả
+    String? accessToken, 
   }) async {
     final box = Hive.box<UserModel>(_boxName);
     final current = box.get(_userKey);
 
     if (current == null) {
-      // Chưa có -> tạo mới, nhưng cần đảm bảo non-null (dùng fallback)
       final newUser = UserModel(
         id: id ?? '',
         name: (name?.trim().isNotEmpty == true) ? name! : 'No name',
@@ -281,13 +270,12 @@ class UserService {
             ? imageUrl!
             : 'https://cdn-icons-png.flaticon.com/512/8792/8792047.png',
         email: email ?? '',
-        accessToken: accessToken ?? '', // fallback rỗng
+        accessToken: accessToken ?? '',
       );
       await box.put(_userKey, newUser);
       return;
     }
 
-    // Đã có -> merge: chỉ cập nhật khi giá trị mới KHÁC null & KHÔNG rỗng
     final merged = current.copyWith(
       id: (id != null && id.isNotEmpty) ? id : current.id,
       name: (name != null && name.trim().isNotEmpty) ? name : current.name,
@@ -308,7 +296,7 @@ class JwtUtil {
   static bool isExpired(String token) {
     try {
       final parts = token.split('.');
-      if (parts.length != 3) return true; // token lỗi coi như hết hạn
+      if (parts.length != 3) return true; 
       final payload = jsonDecode(
         utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
       ) as Map<String, dynamic>;
@@ -317,13 +305,12 @@ class JwtUtil {
       final expiresAt = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
       return DateTime.now().isAfter(expiresAt);
     } catch (_) {
-      return true; // parse lỗi => coi như expired
+      return true; 
     }
   }
 
   static final String _baseUrl = dotenv.env['BASE_URL'] ?? "";
 
-  /// Gọi server xác thực token (phòng khi token bị revoke dù exp còn sống)
   static Future<bool> validateRemote(String token) async {
     try {
       final res = await http.get(
@@ -333,7 +320,6 @@ class JwtUtil {
           'Authorization': 'Bearer $token',
         },
       );
-      // 200/201 => hợp lệ, 401/403 => hết hạn/không hợp lệ
       return res.statusCode >= 200 && res.statusCode < 300;
     } catch (_) {
       return false;

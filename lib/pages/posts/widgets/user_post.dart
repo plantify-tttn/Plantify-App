@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:plantify/models/post_model.dart';
 import 'package:plantify/models/user_model.dart';
 import 'package:plantify/services/user_service.dart';
-import 'package:intl/intl.dart'; // để format thời gian
+import 'package:intl/intl.dart'; 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserPost extends StatelessWidget {
@@ -73,7 +73,6 @@ class UserPost extends StatelessWidget {
             child: Row(children: [CircularProgressIndicator()]),
           );
         } else if (snapshot.hasError) {
-          // print('==========${snapshot.error}');
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 15),
             child: Row(children: [Text(local.errorLoadUser)]),
@@ -132,7 +131,6 @@ class UserPost extends StatelessWidget {
     );
   }
 
-  /// Format chuỗi thời gian ISO thành "HH:mm dd/MM/yyyy"
   String _formatTime(String isoTime) {
     try {
       final dateTime = DateTime.parse(isoTime);

@@ -85,7 +85,6 @@ class TrendingPlant extends StatelessWidget {
                     ),
                   ),
 
-                // Overlay gradient để chữ rõ hơn
                 Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
@@ -102,7 +101,6 @@ class TrendingPlant extends StatelessWidget {
                   ),
                 ),
 
-                // Badge "Trending"
                 Positioned(
                   top: 12,
                   left: 12,
@@ -136,7 +134,6 @@ class TrendingPlant extends StatelessWidget {
                   ),
                 ),
 
-                // Icon “thích” mờ (tuỳ bạn xử lý state sau)
                 Positioned(
                   top: 12,
                   right: 12,
@@ -151,7 +148,6 @@ class TrendingPlant extends StatelessWidget {
                   ),
                 ),
 
-                // Tên + nút xem
                 Positioned(
                   left: 14,
                   right: 14,

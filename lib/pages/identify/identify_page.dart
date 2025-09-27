@@ -29,7 +29,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
   PlantModel? _recognizedPlant;
 
   String? _imagePath;
-  bool _uploading = false; // tránh bấm nhiều lần
+  bool _uploading = false; 
   final String _token = UserService.getToken();
 
   bool get _isFrontCamera =>
@@ -68,7 +68,6 @@ class _IdentifyPageState extends State<IdentifyPage> {
     }
   }
 
-  // Preview camera full màn hình
   Widget _buildFullScreenPreview() {
     final c = _controller!;
     return Center(
@@ -80,10 +79,9 @@ class _IdentifyPageState extends State<IdentifyPage> {
     );
   }
 
-  // Ảnh đã chụp full màn hình
   Widget _buildFullScreenCapturedImage() {
   final img = Image.file(File(_imagePath!));
-  final needMirror = _isFrontCamera; // nếu bạn thấy vẫn đúng bên, đặt = false
+  final needMirror = _isFrontCamera; 
   final child = FittedBox(
     fit: BoxFit.contain,
     child: img,
@@ -94,7 +92,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
       child: needMirror
           ? Transform(
               alignment: Alignment.center,
-              transform: Matrix4.rotationY(math.pi), // mirror captured
+              transform: Matrix4.rotationY(math.pi), 
               child: child,
             )
           : child,
@@ -132,14 +130,14 @@ class _IdentifyPageState extends State<IdentifyPage> {
   void _clearImage() {
   setState(() {
     _imagePath = null;
-    _recognizedPlant = null; // 👈 clear luôn kết quả
+    _recognizedPlant = null;
   });
 }
 
   Future<void> _sendSeed() async {
   if (_imagePath == null || _uploading) return;
 
-  final pathAtRequest = _imagePath; // 👈 snapshot đường dẫn ảnh
+  final pathAtRequest = _imagePath; 
   setState(() => _uploading = true);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text('⏫ Đang tải ảnh...')),
@@ -150,7 +148,6 @@ class _IdentifyPageState extends State<IdentifyPage> {
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    // Nếu trong lúc chờ, user đã retake/clear => bỏ qua kết quả cũ
     if (!mounted || _imagePath != pathAtRequest) return;
 
     if (res.isNotEmpty) {
@@ -197,14 +194,11 @@ class _IdentifyPageState extends State<IdentifyPage> {
             ? const Center(child: CircularProgressIndicator())
             : Stack(
                 children: [
-                  // Preview / Captured
                   Positioned.fill(
                     child: hasImage
                         ? _buildFullScreenCapturedImage()
                         : _buildFullScreenPreview(),
                   ),
-
-                  // Gradient top
                   Positioned(
                     left: 0,
                     right: 0,
@@ -222,8 +216,6 @@ class _IdentifyPageState extends State<IdentifyPage> {
                       ),
                     ),
                   ),
-
-                  // Bottom controls
                   Positioned(
                     left: 24,
                     right: 24,
@@ -231,18 +223,16 @@ class _IdentifyPageState extends State<IdentifyPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Gallery / Delete
                         CircleAvatar(
                           backgroundColor: Colors.white24,
                           child: IconButton(
                             icon: Icon(hasImage ? Icons.delete_outline : Icons.photo, color: Colors.white),
                             onPressed: _uploading
-                                ? null // 👈 khoá khi upload
+                                ? null
                                 : (hasImage ? _clearImage : _pickFromGallery),
                           ),
                         ),
 
-                        // Shutter (khi chưa chụp)
                         GestureDetector(
                           onTap: hasImage ? null : _captureImage,
                           child: Container(
@@ -264,7 +254,6 @@ class _IdentifyPageState extends State<IdentifyPage> {
                           ),
                         ),
 
-                        // Switch camera
                         CircleAvatar(
                           backgroundColor: Colors.white24,
                           child: IconButton(
@@ -277,7 +266,6 @@ class _IdentifyPageState extends State<IdentifyPage> {
                     ),
                   ),
 
-                  // Khi đã chụp: Retake & Use
                   if (hasImage)
                     Positioned(
                       bottom: 120,
@@ -342,7 +330,7 @@ class _IdentifyPageState extends State<IdentifyPage> {
                           context.goNamed(RouterName.detailPlant, extra: p);
                           setState(() {
                             _recognizedPlant = null;
-                            _clearImage(); // <-- GỌI HÀM
+                            _clearImage();
                           });
                         },
                         child: Row(

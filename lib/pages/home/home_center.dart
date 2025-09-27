@@ -29,7 +29,6 @@ class _HomeCenterState extends State<HomeCenter> {
     return Scaffold(
       extendBody: true,
 
-      // 👇 chỉ hiển thị page hiện tại
       body: SafeArea(
         top: true,
         bottom: false,

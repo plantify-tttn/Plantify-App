@@ -13,12 +13,6 @@ class FavouriteLocal {
 
 class FavoriteService {
   static final String baseUrl = dotenv.env['BASE_URL'] ?? "";
-
-  /// POST /favourite/{postId}
-  /// Return:
-  /// - true  => after op, post is loved (server trả 'data')
-  /// - false => after op, post is not loved (server không có 'data')
-  /// - null  => request failed (giữ nguyên UI nếu muốn)
   static Future<bool?> toggleByResponse(String postId, String token) async {
     final res = await http.post(
       Uri.parse('$baseUrl/posts/like/$postId'),
@@ -36,13 +30,11 @@ class FavoriteService {
     } catch (_) {}
 
     final hasData = json != null && json['data'] != null;
-
-    // cập nhật Hive theo kết quả server
     if (hasData) {
-      await FavouriteLocal.add(postId);    // now loved
+      await FavouriteLocal.add(postId);   
       return true;
     } else {
-      await FavouriteLocal.remove(postId); // now un-loved
+      await FavouriteLocal.remove(postId); 
       return false;
     }
   }

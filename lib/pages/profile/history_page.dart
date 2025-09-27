@@ -25,7 +25,7 @@ class _HistoryPageState extends State<HistoryPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final vm = context.read<SearchVm>();
-      vm.getPlanItems();            // hoặc getPlantItems nếu tên đúng
+      vm.getPlanItems();      
       vm.getDiseaseItems();
       context.read<PostProvider>().getHistory();
     });
@@ -41,7 +41,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<SearchVm>();   // <-- dùng vm
+    final vm = context.watch<SearchVm>();
     final locale = Localizations.localeOf(context);
     final local = AppLocalizations.of(context)!;
     return Consumer<PostProvider>(
@@ -62,10 +62,10 @@ class _HistoryPageState extends State<HistoryPage> {
 
               if (h.label.isNotEmpty) {
                 if (h.detectType == 'seed') {
-                  final i = vm.allPlanItems.indexWhere((t) => t.id == h.label);              // <-- vm
+                  final i = vm.allPlanItems.indexWhere((t) => t.id == h.label);           
                   if (i != -1) p = vm.allPlanItems[i];
                 } else {
-                  final j = vm.allDiseaseItems.indexWhere((t) => t.id == h.label);           // <-- vm
+                  final j = vm.allDiseaseItems.indexWhere((t) => t.id == h.label);          
                   if (j != -1) d = vm.allDiseaseItems[j];
                 }
               }

@@ -77,7 +77,6 @@ class RecordsService {
         .map((e) => RecordTimelineItem.fromJson(e))
         .toList();
 
-    // mới nhất trước
     list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return list;
   }

@@ -15,12 +15,12 @@ class _UserPostPageState extends State<UserPostPage> {
       appBar: AppBar(),
       body: Scrollbar(
         controller: _scrollController,
-        thumbVisibility: true, // luôn hiện thanh cuộn
+        thumbVisibility: true, 
         interactive: true,
         child: ListView(
           controller: _scrollController,
           padding: EdgeInsets.zero,
-          physics: const AlwaysScrollableScrollPhysics(), // kéo được dù ít nội dung
+          physics: const AlwaysScrollableScrollPhysics(), 
           children: [
             const SizedBox(height: 42),
             const UserPostList(),

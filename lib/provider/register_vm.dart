@@ -43,14 +43,12 @@ class RegisterVm extends ChangeNotifier {
   String? get usernameError => _usernameError;
 
 
-  // Combine all validations to enable "Register" button
   bool get canRegister => _canRegister;
 
   void updateCan(){
     _canRegister = _isEmailValid && _isPassValid && _isRePassValid && _isUsernameValid;
     notifyListeners();
   }
-  // Validate logic
   void validateEmail(String value) {
     final trimmed = value.trim();
     final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -75,7 +73,6 @@ class RegisterVm extends ChangeNotifier {
       _passError = null;
       _isPassValid = true;
     }
-    // Gọi lại rePass để cập nhật so khớp
     validateRePassword(_rePassController.text);
   }
 
@@ -105,8 +102,6 @@ class RegisterVm extends ChangeNotifier {
     updateCan();
   }
 
-
-  // Dispose các controller khi không dùng nữa
   @override
   void dispose() {
     _usernameController.dispose();

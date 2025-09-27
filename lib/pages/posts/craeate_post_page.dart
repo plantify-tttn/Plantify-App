@@ -66,7 +66,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: Text(local.pickFromGallery), // Đa ngữ
+                title: Text(local.pickFromGallery),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage();
@@ -74,7 +74,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: Text(local.takePhoto), // Đa ngữ
+                title: Text(local.takePhoto), 
                 onTap: () {
                   Navigator.pop(context);
                   _takePhoto();
@@ -83,7 +83,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
               if (_imageFile != null)
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
-                  title: Text(local.deleteImage, style: const TextStyle(color: Colors.red)), // Đa ngữ
+                  title: Text(local.deleteImage, style: const TextStyle(color: Colors.red)), 
                   onTap: () {
                     Navigator.pop(context);
                     setState(() => _imageFile = null);
@@ -110,18 +110,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
   setState(() => _submitting = true);
 
   try {
-    //🟢 Gọi API tạo post
     final token = UserService.getToken();
     if (token == null || token.isEmpty) {
       throw Exception('Missing token');
     }
     if (_imageFile != null) {
       context.read<PostProvider>().craetePost(content: content, image: _imageFile!);
-      // await PostService().createPost(
-      //   content: content,
-      //   image: _imageFile!,
-      //   token: token,
-      // );
       if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -138,12 +132,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
               ],
             ),
             backgroundColor: Colors.green.shade600,
-            behavior: SnackBarBehavior.floating, // nổi lên trên, không dính sát mép dưới
+            behavior: SnackBarBehavior.floating, 
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            duration: const Duration(seconds: 2), // tự ẩn sau 2s
+            duration: const Duration(seconds: 2),
             elevation: 4,
           ),
         );
@@ -167,23 +161,21 @@ class _CreatePostPageState extends State<CreatePostPage> {
               ],
             ),
             backgroundColor: const Color.fromARGB(255, 160, 67, 67),
-            behavior: SnackBarBehavior.floating, // nổi lên trên, không dính sát mép dưới
+            behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            duration: const Duration(seconds: 2), // tự ẩn sau 2s
+            duration: const Duration(seconds: 2), 
             elevation: 4,
           ),
         );
     }
-    //print("✅ Post created: $res");
 
     
 
   } catch (e) {
     if (!mounted) return;
-  //  print(  '❌ Error creating post: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('${local.postError}: $e')),
     );
@@ -206,9 +198,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
-          tooltip: local.back, // Đa ngữ
+          tooltip: local.back, 
         ),
-        title: Text(local.createPost), // Đa ngữ
+        title: Text(local.createPost),
       ),
       body: SafeArea(
         child: GestureDetector(
@@ -237,7 +229,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                           ),
                           onChanged: (_) => setState(() {}),
                           decoration: InputDecoration(
-                            hintText: local.postHint, // Đa ngữ
+                            hintText: local.postHint,
                             hintStyle: TextStyle(color: Colors.grey[600]),
                             border: InputBorder.none,
                             counterText: '',
@@ -263,7 +255,6 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
                 const SizedBox(height: 12),
 
-                // Khu vực ảnh
                 if (_imageFile != null)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
@@ -287,7 +278,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                             child: IconButton(
                               icon: const Icon(Icons.close, color: Colors.white),
                               onPressed: () => setState(() => _imageFile = null),
-                              tooltip: local.deleteImage, // Đa ngữ
+                              tooltip: local.deleteImage, 
                             ),
                           ),
                         ),
@@ -313,7 +304,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                         children: [
                           const Icon(Icons.add_photo_alternate_outlined, size: 36),
                           const SizedBox(height: 8),
-                          Text(local.addImageOptional), // Đa ngữ
+                          Text(local.addImageOptional), 
                         ],
                       ),
                     ),

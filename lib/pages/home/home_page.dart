@@ -33,7 +33,6 @@ class _HomePageState extends State<HomePage> {
     await context.read<PostProvider>().getPosts(force: true);
   }
 
-  // Gọi khi chạm đáy
   Future<void> _loadMore() async {
     try {
       await context.read<PostProvider>().loadMorePost();
@@ -41,7 +40,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onScroll() {
-    // Epsilon nhỏ để tránh miss do float
     const double epsilon = 24.0;
     final position = _scrollController.position;
     if (position.pixels >= position.maxScrollExtent - epsilon) {
@@ -55,13 +53,13 @@ class _HomePageState extends State<HomePage> {
       onRefresh: _onRefresh,
       child: Scrollbar(
         controller: _scrollController,
-        thumbVisibility: true, // luôn hiện thanh cuộn
+        thumbVisibility: true, 
         interactive: true,
         child: ListView(
           controller: _scrollController,
           padding: EdgeInsets.zero,
           physics:
-              const AlwaysScrollableScrollPhysics(), // kéo được dù ít nội dung
+              const AlwaysScrollableScrollPhysics(),
           children: [
             const SizedBox(height: 42),
             const HomeHeader(),

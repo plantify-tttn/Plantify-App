@@ -28,21 +28,10 @@ class LoginPage extends StatelessWidget {
             statusBarIconBrightness: Brightness.dark,
           ),
           child: Scaffold(
-            backgroundColor: Colors.transparent, // 👈 Không che gradient
-            extendBody: true, // 👈 Cho gradient tràn xuống dưới
+            backgroundColor: Colors.transparent, 
+            extendBody: true,
             resizeToAvoidBottomInset: false,
             extendBodyBehindAppBar: true,
-            // appBar: AppBar(
-            //   backgroundColor: Colors.transparent,
-            //   elevation: 0,
-            //   shadowColor: Colors.transparent,
-            //   leading: IconButton(
-            //     onPressed: () {
-            //       context.goNamed(RouterName.home);
-            //     },
-            //     icon: Icon(Icons.arrow_back_outlined)
-            //   ),
-            // ),
             body: Stack(
               children: [
                 Positioned.fill(
@@ -63,7 +52,7 @@ class LoginPage extends StatelessWidget {
                 Center(
                   child: Column(
                     children: [
-                      const SizedBox(height: 150), // Khoảng cách từ trên xuống
+                      const SizedBox(height: 150), 
                       Text(
                         AppLocalizations.of(context)!.login,
                         style: TextStyle(
@@ -139,7 +128,7 @@ class LoginPage extends StatelessWidget {
 
                           if (ok == 'ok') {
                             final saved =
-                                UserService.hiveGetUser(); // lấy user vừa lưu
+                                UserService.hiveGetUser();
                             if (saved != null) {
                               await context
                                   .read<UserVm>()

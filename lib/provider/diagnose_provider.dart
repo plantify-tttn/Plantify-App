@@ -9,11 +9,12 @@ class DiagnoseProvider extends ChangeNotifier {
   final Box<ChatMessage> _box;
   final DiagnoseService service = DiagnoseService();
   final String _token = UserService.getToken();
+  String _chatId = '';
+  String get chatId => _chatId;
 
-  // Lấy box từ Hive nếu không truyền vào (đã open trong initHive)
+
   DiagnoseProvider([Box<ChatMessage>? box])
       : _box = box ?? Hive.box<ChatMessage>('diagnose_messages') {
-    // Nếu sợ bị gọi trước initHive(), có thể thêm assert để bắt lỗi dev:
     assert(Hive.isBoxOpen('diagnose_messages'),
         'diagnose_messages box must be opened before creating DiagnoseProvider');
     _messages = _box.values.toList(growable: true);
@@ -25,11 +26,10 @@ class DiagnoseProvider extends ChangeNotifier {
   List<ChatMessage> get messages => List.unmodifiable(_messages);
   bool get sending => _sending;
 
-  // ---------- Persistence helpers ----------
   int _append(ChatMessage m) {
     _messages.add(m);
     _box.add(m);
-    return _messages.length - 1; // <-- trả index
+    return _messages.length - 1; 
   }
   Future<void> _removeAt(int idx) async {
     if (idx < 0 || idx >= _messages.length) return;
@@ -57,7 +57,6 @@ class DiagnoseProvider extends ChangeNotifier {
     if (lastIdx < _box.length) {
       await _box.deleteAt(lastIdx);
     } else {
-      // rare fallback if out of sync
       await _reSyncAll();
     }
   }
@@ -79,7 +78,6 @@ class DiagnoseProvider extends ChangeNotifier {
     await _box.addAll(_messages);
   }
 
-  // ---------- Public API ----------
   Future<void> clear() async {
     _messages.clear();
     await _box.clear();
@@ -96,9 +94,7 @@ class DiagnoseProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final res = await service.sendText(vmText, _token);
-
-      // remove typing bubble (the last one)
+      final res = await service.sendText(vmText, _token, _chatId);
       await _removeLast();
 
       if (res['success'] == true) {
@@ -109,10 +105,39 @@ class DiagnoseProvider extends ChangeNotifier {
 
         _append(ChatMessage.bot(display, options: options));
       } else {
+        _append(ChatMessage.bot('Vui lòng chọn hoặc chụp 1 hình ảnh của bệnh để bắt đầu'));
+      }
+    } catch (e) {
+      _append(ChatMessage.bot('Xin lỗi, đã xảy ra lỗi $e'));
+    } finally {
+      _sending = false;
+      notifyListeners();
+    }
+  } 
+
+  Future<void> sendTextInit(String text, {bool isfromiamge = false}) async {
+    final vmText = text.trim();
+    if (vmText.isEmpty || _sending) return;
+
+    if (!isfromiamge) _append(ChatMessage.userText(vmText));
+    _sending = true;
+    _append(ChatMessage.bot("Đang tìm câu trả lời..."));
+    notifyListeners();
+
+    try {
+      final res = await service.sendTextInit(vmText, _token);
+      await _removeLast();
+      if (res['success'] == true) {
+        _chatId = res['chatId'];
+        final display = (res['display'] as String?) ?? 'Đã nhận phản hồi.';
+        final options = (res['options'] as List<dynamic>? ?? const [])
+            .map((e) => e.toString())
+            .toList();
+        _append(ChatMessage.bot(display, options: options));
+      } else {
         _append(ChatMessage.bot('Xin lỗi, đã xảy ra lỗi'));
       }
     } catch (e) {
-      // nếu removeLast thất bại trước đó, vẫn append lỗi để không “mất” log
       _append(ChatMessage.bot('Xin lỗi, đã xảy ra lỗi $e'));
     } finally {
       _sending = false;
@@ -124,20 +149,17 @@ class DiagnoseProvider extends ChangeNotifier {
     if (_sending) return;
 
     _append(ChatMessage.userImage(file));
-    final analyzingIdx = _append(ChatMessage.bot("Đang phân tích ảnh...")); // <-- giữ index
+    final analyzingIdx = _append(ChatMessage.bot("Đang phân tích ảnh..."));
     notifyListeners();
 
     try {
       final res = await service.sendImage(file, _token);
 
       if (res['success'] == true) {
-        // Gửi câu “display” như input để bot trả lời
-        await sendText(res['display'] as String, isfromiamge: true);
-
-        // Bây giờ xóa đúng bubble "Đang phân tích ảnh..."
-        await _removeAt(analyzingIdx); // <-- xóa theo index
+        await sendTextInit(res['display'] as String, isfromiamge: true);
+        await _removeAt(analyzingIdx); 
       } else {
-        await _replaceAt(analyzingIdx, ChatMessage.bot("Lỗi tải ảnh"));
+        await _replaceAt(analyzingIdx, ChatMessage.bot("Không phát hiện được bệnh, hãy cho tôi biết thông tin rõ hơn về bệnh của bạn"));
       }
     } catch (e) {
       await _replaceAt(analyzingIdx, ChatMessage.bot('Không gửi được ảnh'));

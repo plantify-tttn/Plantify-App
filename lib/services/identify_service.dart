@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-/// IdentifyService: upload ảnh hạt giống (seed) để nhận diện.
-/// API tham chiếu từ Postman: POST {BASE_URL}/upload/detect/seed  -> { "url": "..." }
 class IdentifyService {
   IdentifyService._internal();
   static final IdentifyService _instance = IdentifyService._internal();

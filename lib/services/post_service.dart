@@ -17,7 +17,6 @@ class PostService {
   final String baseUrl = dotenv.env['BASE_URL'] ?? "";
 
 
-  /// Gọi API và lưu kết quả vào Hive
   Future<List<PostModel>> fetchAndSavePosts({
     int page = 1,
     int limit = 5,
@@ -38,20 +37,17 @@ class PostService {
       return [];
     }
 
-    // decode chuẩn để tránh lỗi tiếng Việt
     final decoded =
         jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
 
-    // API trả mảng trong field "data"
     final List list = (decoded['data'] ?? decoded['posts'] ?? []) as List;
 
     return list
         .map((e) => PostModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
-  /// Gọi API và lưu kết quả vào Hive
   Future<List<PostModel>> fetchUPosts({
-    required String token, // truyền token nếu có
+    required String token, 
   }) async {
     final uri = Uri.parse('$baseUrl/posts/user');
 
@@ -66,7 +62,6 @@ class PostService {
       return [];
     }
 
-    // API trả về mảng trong field "data" (không phải "posts")
     final rawList = jsonDecode(response.body) as List;
 
     final posts = rawList
@@ -76,7 +71,7 @@ class PostService {
   }
 
   Future<List<HistoryModel>> fetchHistory({
-    required String token, // truyền token nếu có
+    required String token, 
   }) async {
     final uri = Uri.parse('$baseUrl/upload/user-history');
 
@@ -91,7 +86,6 @@ class PostService {
       return [];
     }
 
-    // API trả về mảng trong field "data" (không phải "posts")
     final rawList = jsonDecode(response.body) as List;
 
     final his = rawList
@@ -100,18 +94,14 @@ class PostService {
     return his;
   }
 
-  /// Gọi API để cập nhật Hive trong nền
   void _refreshPostsInBackground() async {
     try {
       await fetchAndSavePosts();
     } catch (e) {
-      // Không cần throw, chỉ log
       // print("⚠️ Không thể làm mới dữ liệu bài viết: $e");
     }
   }
 
-
-  /// Lấy 1 bài viết theo id
   Future<PostModel> getPostById(String id) async {
     final response = await http.get(Uri.parse('$baseUrl/posts/$id'));
 
@@ -134,7 +124,7 @@ class PostService {
     request.fields['content'] = content;
     request.files.add(
       await http.MultipartFile.fromPath(
-        'image', // tên field bên backend
+        'image', 
         image.path,
       ),
     );
@@ -149,8 +139,6 @@ class PostService {
     }
     
   }
-
-  /// Xóa bài viết
   Future<void> deletePost(String id) async {
     final response = await http.delete(Uri.parse('$baseUrl/posts/$id'));
 
@@ -158,16 +146,14 @@ class PostService {
       throw Exception('Failed to delete post');
     }
   }
-  /// Lưu danh sách bài viết vào Hive
   Future<void> savePostsToHive(List<PostModel> posts) async {
     final box = Hive.box<PostModel>('posts');
-    await box.clear(); // xoá cũ
+    await box.clear();
     for (var post in posts) {
       await box.put(post.id, post);
     }
   }
 
-  /// Lấy danh sách từ Hive
   List<PostModel> getPostsFromHive() {
     final box = Hive.box<PostModel>('posts');
     return box.values.toList();

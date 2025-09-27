@@ -74,7 +74,7 @@ class PlantDetailPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "🌰 ${AppLocalizations.of(context)!.seed}", // cần key 'seed' trong l10n
+                    "🌰 ${AppLocalizations.of(context)!.seed}", 
                     style: TextStyle(
                       color: Color(MyColor.pr1),
                       fontSize: 25,
@@ -84,11 +84,10 @@ class PlantDetailPage extends StatelessWidget {
                 ),
                 _buildHighlightBox(
                   plant.localizedSeed(locale),
-                  icon: Icons.spa, // or Icons.grass
+                  icon: Icons.spa, 
                   backgroundColor: Colors.teal.shade100,
                 ),
               ],
-              // 🌱 CHARACTERISTICS
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -107,7 +106,6 @@ class PlantDetailPage extends StatelessWidget {
                 context: context,
               ),
       
-              // 🧑‍🌾 CULTIVATION
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -126,7 +124,6 @@ class PlantDetailPage extends StatelessWidget {
                 context: context,
               ),
       
-              // ☀️ SEASON
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -144,7 +141,6 @@ class PlantDetailPage extends StatelessWidget {
                 backgroundColor: Colors.orange.shade100,
               ),
       
-              // 📝 NOTE
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
@@ -200,27 +196,27 @@ class PlantDetailPage extends StatelessWidget {
     if (section == 'characteristics') {
       switch (key) {
         case 'height':
-          return local.height; // "Chiều cao"
+          return local.height; 
         case 'growthDuration':
-          return local.growthDuration; // "Thời gian sinh trưởng"
+          return local.growthDuration; 
         case 'leafColor':
-          return local.leafColor; // "Màu lá"
+          return local.leafColor;
         case 'rootType':
-          return local.rootType; // "Loại rễ"
+          return local.rootType; 
       }
     } else if (section == 'cultivation') {
       switch (key) {
         case 'soil':
-          return local.soil; // "Đất"
+          return local.soil; 
         case 'climate':
-          return local.climate; // "Khí hậu"
+          return local.climate; 
         case 'watering':
-          return local.watering; // "Tưới nước"
+          return local.watering; 
         case 'fertilizer':
-          return local.fertilizer; // "Phân bón"
+          return local.fertilizer;
       }
     }
-    return key; // fallback
+    return key;
   }
   Widget _buildKeyValueCards(
       Map<String, String> map, Color backgroundColor,
@@ -241,7 +237,7 @@ class PlantDetailPage extends StatelessWidget {
                 keyLabel,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 33, 105, 0), // ✅ Màu cho key
+                  color: const Color.fromARGB(255, 33, 105, 0),
                 ),
               ),
               subtitle: Text(

@@ -5,7 +5,6 @@ import 'package:plantify/l10n/locale_provider.dart';
 import 'package:plantify/pages/profile/history_page.dart';
 import 'package:plantify/pages/profile/user_post_page.dart';
 import 'package:plantify/pages/profile/user_profile_page.dart';
-import 'package:plantify/services/user_service.dart';
 import 'package:plantify/theme/color.dart';
 import 'package:plantify/theme/theme_provider.dart';
 import 'package:plantify/provider/user_vm.dart';
@@ -29,7 +28,7 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildUserInfo(BuildContext context) {
-  final user = context.watch<UserVm>().user; // 👈 listen changes từ Hive qua UserVm
+  final user = context.watch<UserVm>().user;
   final themeProvider = Provider.of<ThemeProvider>(context);
   final localeProvider = Provider.of<LocaleProvider>(context);
   final local = AppLocalizations.of(context)!;
@@ -81,7 +80,6 @@ class ProfilePage extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
-          // 📌 Nút OutlinedButton: Thông tin cá nhân
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -105,7 +103,6 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // 📌 Nút OutlinedButton: History
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -129,7 +126,6 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // 📌 Nút OutlinedButton: Bài viết
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -153,7 +149,6 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // 🌐 Nút OutlinedButton: Đổi ngôn ngữ
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -172,7 +167,6 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          // 🎨 Nút OutlinedButton: Đổi theme
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -199,7 +193,6 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // 🔴 Đăng xuất
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -238,7 +231,6 @@ class ProfilePage extends StatelessWidget {
                     ],
                   ),
                 );
-                // Sửa lỗi dùng context sau async gap
                 if (confirm == true) {
                   if (context.mounted) {
                     context.goNamed(RouterName.login);

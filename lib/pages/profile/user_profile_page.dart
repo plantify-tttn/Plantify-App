@@ -24,7 +24,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final _picker = ImagePicker();
 
   UserModel? _user;
-  File? _localAvatar; // ảnh chọn từ máy
+  File? _localAvatar; 
   bool _saving = false;
 
   bool _canSave = false;
@@ -37,7 +37,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final changedEmail = newEmail != (_emailCurrent);
     final changedAvatar = _localAvatar != null;
 
-    // validator nhanh giống form
     final validName = newName.isNotEmpty;
     final validEmail =
         RegExp(r'^[\w\.\-]+@[\w\-]+\.[\w\.\-]+$').hasMatch(newEmail);
@@ -65,7 +64,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     _nameCtl.addListener(_recomputeCanSave);
     _emailCtl.addListener(_recomputeCanSave);
-    // gọi 1 lần để set đúng trạng thái nút
     _recomputeCanSave();
   }
 
@@ -85,7 +83,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final url = _user?.imageUrl;
     if (url == null || url.isEmpty) return null;
     if (url.startsWith('http')) return NetworkImage(url);
-    return FileImage(File(url)); // hỗ trợ lưu path local
+    return FileImage(File(url)); 
   }
 
   @override
@@ -94,14 +92,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
     if (_user == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(local.profile)), // Đa ngữ
-        body: Center(child: Text(local.noUserInfo)), // Đa ngữ
+        appBar: AppBar(title: Text(local.profile)), 
+        body: Center(child: Text(local.noUserInfo)),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(local.profile), // Đa ngữ
+        title: Text(local.profile), 
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -110,7 +108,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
             key: _formKey,
             child: Column(
               children: [
-                // Avatar + nút đổi ảnh
                 Stack(
                   alignment: Alignment.bottomRight,
                   children: [
@@ -141,42 +138,38 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ),
                 const SizedBox(height: 24),
 
-                // Tên
                 TextFormField(
                   controller: _nameCtl,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                    labelText: local.displayName, // Đa ngữ
+                    labelText: local.displayName,
                     prefixIcon: const Icon(Icons.person_outline),
                     border: const OutlineInputBorder(),
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
                       ? local.nameRequired
-                      : null, // Đa ngữ
+                      : null,
                 ),
                 const SizedBox(height: 16),
-
-                // Email
                 TextFormField(
                   controller: _emailCtl,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: local.email, // Đa ngữ
+                    labelText: local.email, 
                     prefixIcon: const Icon(Icons.email_outlined),
                     border: const OutlineInputBorder(),
                   ),
                   validator: (v) {
                     final t = v?.trim() ?? '';
-                    if (t.isEmpty) return local.emailRequired; // Đa ngữ
+                    if (t.isEmpty) return local.emailRequired;
                     final ok =
                         RegExp(r'^[\w\.\-]+@[\w\-]+\.[\w\.\-]+$').hasMatch(t);
-                    return ok ? null : local.emailInvalid; // Đa ngữ
+                    return ok ? null : local.emailInvalid;
                   },
                 ),
 
                 const SizedBox(height: 24),
 
-                // Nút lưu phía dưới (nếu bạn muốn cả trên AppBar và dưới)
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -210,7 +203,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: Text(local.pickFromGallery), // Đa ngữ
+              title: Text(local.pickFromGallery), 
               onTap: () async {
                 Navigator.pop(context);
                 final x = await _picker.pickImage(
@@ -226,7 +219,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: Text(local.takePhoto), // Đa ngữ
+              title: Text(local.takePhoto), 
               onTap: () async {
                 Navigator.pop(context);
                 final x = await _picker.pickImage(
@@ -241,7 +234,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
                 title: Text(local.deleteImage,
-                    style: const TextStyle(color: Colors.red)), // Đa ngữ
+                    style: const TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
                   setState(() => _localAvatar = null);
@@ -260,19 +253,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
   final newName  = _nameCtl.text.trim();
   final newEmail = _emailCtl.text.trim();
 
-  // _nameCurrent / _emailCurrent là non-nullable -> không cần ?? ''
   final noNameChange   = newName  == _nameCurrent;
   final noEmailChange  = newEmail == _emailCurrent;
   final noAvatarChange = _localAvatar == null;
 
   if (noNameChange && noEmailChange && noAvatarChange) {
-    // tuỳ chọn: hiện toast nhẹ
-    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(local.profileUpdateNoChange)));
     return;
   }
 
   setState(() => _saving = true);
-  _recomputeCanSave(); // khoá nút khi đang lưu
+  _recomputeCanSave();
 
   try {
     final updated = await UserService().updateProfileWithOptionalAvatar(
@@ -288,7 +278,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       _nameCurrent  = updated.user.name;
       _emailCurrent = updated.user.email;
     });
-    _recomputeCanSave(); // sau khi sync xong -> nút tắt
+    _recomputeCanSave();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(local.profileUpdateSuccess)),
     );

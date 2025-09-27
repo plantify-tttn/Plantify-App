@@ -27,7 +27,7 @@ class _RecordsPageState extends State<RecordsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomBarH = kBottomNavigationBarHeight; // ~56
+    final bottomBarH = kBottomNavigationBarHeight; 
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -77,7 +77,7 @@ class _RecordsPageState extends State<RecordsPage> {
 
   Future<void> _openCreateDialog() async {
   final nameCtrl = TextEditingController();
-  final Set<String> selectedHistoryIds = {}; // lưu các id đã chọn
+  final Set<String> selectedHistoryIds = {};
 
   await showDialog<void>(
     context: context,
@@ -102,7 +102,6 @@ class _RecordsPageState extends State<RecordsPage> {
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: () async {
-                      // mở sheet chọn history
                       final picks = await showModalBottomSheet<Set<String>>(
                         context: context,
                         isScrollControlled: true,
@@ -161,19 +160,15 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
   @override
   void initState() {
     super.initState();
-    // Bảo đảm có data trước khi render
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // chỉ cần bệnh
       context.read<PostProvider>().getHistory();
-      // để map label -> tên hiển thị
       context.read<SearchVm>().getDiseaseItems();
     });
   }
 
   String _fmt(DateTime dt) => DateFormat('yyyy-MM-dd HH:mm').format(dt);
 
-  // Giống logic ở HistoryPage nhưng rút gọn cho diseases
   String _diseaseDisplayName({
     required String label,
     required SearchVm vm,
@@ -184,7 +179,7 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
     if (idx != -1) {
       return vm.allDiseaseItems[idx].localizedName(locale);
     }
-    return label; // fallback nếu chưa đồng bộ
+    return label;
   }
 
   @override
@@ -192,13 +187,12 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
     final mq = MediaQuery.of(context);
     final height = mq.size.height * 0.8;
     final locale = Localizations.localeOf(context);
-    final local = AppLocalizations.of(context)!; // dùng nếu bạn đã gen l10n
+    final local = AppLocalizations.of(context)!; 
 
     return SizedBox(
       height: height,
       child: Consumer2<PostProvider, SearchVm>(
         builder: (context, pp, vm, _) {
-          // Lọc chỉ diseases
           final histories = pp.history.where((h) => h.detectType != 'seed').toList();
 
           return Scaffold(

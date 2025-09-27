@@ -17,7 +17,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Carousel Image
         SizedBox(
           height: 250,
           child: PageView.builder(
@@ -33,7 +32,6 @@ class _ImageCarouselState extends State<ImageCarousel> {
           ),
         ),
         const SizedBox(height: 8),
-        // Indicator
         SmoothPageIndicator(
           controller: _controller,
           count: widget.imageUrls.length,

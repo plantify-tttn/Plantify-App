@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plantify/theme/color.dart';
 
-/// Khung thẻ kết quả: bo góc + viền + nền sáng
 class ResultContainer extends StatelessWidget {
   final Widget child;
   const ResultContainer({super.key, required this.child});
@@ -22,7 +21,6 @@ class ResultContainer extends StatelessWidget {
   }
 }
 
-/// Dòng item có ripple, ảnh bo góc, highlight từ khóa, mũi tên ở cuối
 class SearchTile extends StatelessWidget {
   final String title;
   final String query;
@@ -50,7 +48,6 @@ class SearchTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           children: [
-            // Thumbnail
             ClipRRect(
               borderRadius: radius,
               child: SizedBox(
@@ -77,7 +74,6 @@ class SearchTile extends StatelessWidget {
             ),
             const SizedBox(width: 10),
 
-            // Tiêu đề có highlight query
             Expanded(
               child: HighlightedText(
                 text: title,
@@ -85,22 +81,20 @@ class SearchTile extends StatelessWidget {
                 baseStyle: TextStyle(
                   fontSize: 16,
                   height: 1.4,
-                  color: Theme.of(context).colorScheme.onSurface, // ✅ thêm màu chữ gốc
+                  color: Theme.of(context).colorScheme.onSurface, 
                 ),
                 highlightStyle: TextStyle(
-                  color: Color(MyColor.pr1),                      // màu highlight
+                  color: Color(MyColor.pr1),                  
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
                   height: 1.4,
                 ),
-                maxLines: 1,                                      // ✅ tránh tràn
+                maxLines: 1,                                   
                 overflow: TextOverflow.ellipsis,
               ),
             ),
 
             const SizedBox(width: 8),
-
-            // Mũi tên
             Icon(Icons.chevron_right, color: Colors.grey.shade500, size: 22),
           ],
         ),
@@ -109,7 +103,6 @@ class SearchTile extends StatelessWidget {
   }
 }
 
-/// Highlight đoạn khớp query (case-insensitive)
 class HighlightedText extends StatelessWidget {
   final String text;
   final String query;
@@ -130,7 +123,6 @@ class HighlightedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ đảm bảo luôn có màu chữ gốc & màu highlight fallback
     final base = baseStyle.copyWith(
       color: baseStyle.color ?? Theme.of(context).colorScheme.onSurface,
     );
@@ -172,7 +164,6 @@ class HighlightedText extends StatelessWidget {
 }
 
 
-/// Trạng thái rỗng (không có kết quả)
 class EmptyState extends StatelessWidget {
   final String text;
   const EmptyState({super.key, required this.text});

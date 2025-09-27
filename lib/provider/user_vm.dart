@@ -18,7 +18,6 @@ class UserVm extends ChangeNotifier {
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
 
-  // Nên coi là logged in khi có token
   bool get isLoggedIn => (box.get(_userKey)?.accessToken.isNotEmpty ?? false);
 
   void init() {
@@ -36,7 +35,6 @@ class UserVm extends ChangeNotifier {
       _user ??= box.get(_userKey);
       if (forceRefresh || _user == null) {
         final apiUser = await UserService().getUserById(userId);
-        // preserve token, đừng dùng hiveSaveUser ở đây
         await UserService.hiveUpsertUserPartial(
           id: apiUser.id,
           name: apiUser.name,

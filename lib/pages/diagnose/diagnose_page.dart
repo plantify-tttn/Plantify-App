@@ -166,7 +166,6 @@ class _Bubble extends StatelessWidget {
         ),
       );
     } else {
-      // Text + optional quick replies
       final textWidget = SelectableText(
         message.text ?? '',
         style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.4),
@@ -175,30 +174,29 @@ class _Bubble extends StatelessWidget {
       final hasOptions = (message.options?.isNotEmpty ?? false);
 
       if (hasOptions && !isUser) {
-        final optionsWrap = Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: message.options!
-                .map(
-                  (opt) => ActionChip(
-                    label: Text(
-                      opt,
-                      style: const TextStyle(color: Colors.white),
+        final maxBubbleW = MediaQuery.of(context).size.width * 0.72;
+          final maxOptionW = maxBubbleW - 8;
+
+          final optionsWrap = Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: message.options!
+                  .map(
+                    (opt) => _OptionPill(
+                      text: opt,
+                      maxWidth: maxOptionW,
+                      onTap: sending
+                          ? null
+                          : () {
+                              context.read<DiagnoseProvider>().sendText(opt);
+                            },
                     ),
-                    backgroundColor: const Color(0xff263141),
-                    onPressed: sending
-                        ? null
-                        : () {
-                            // gửi option như một câu hỏi mới
-                            context.read<DiagnoseProvider>().sendText(opt);
-                          },
-                  ),
-                )
-                .toList(),
-          ),
-        );
+                  )
+                  .toList(),
+            ),
+          );
 
         mainChild = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,6 +321,49 @@ class _IconBtn extends StatelessWidget {
         child: CircleAvatar(
           backgroundColor: Colors.white12,
           child: Icon(icon, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionPill extends StatelessWidget {
+  final String text;
+  final VoidCallback? onTap;
+  final double maxWidth;
+
+  const _OptionPill({
+    required this.text,
+    required this.maxWidth,
+    this.onTap,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool disabled = onTap == null;
+    return InkWell(
+      onTap: disabled ? null : onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xff263141),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xff2f3a4d), width: 1),
+          ),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: disabled ? Colors.white54 : Colors.white,
+              fontSize: 14.5,
+              height: 1.35,
+            ),
+            softWrap: true,
+            overflow: TextOverflow.visible, 
+          ),
         ),
       ),
     );

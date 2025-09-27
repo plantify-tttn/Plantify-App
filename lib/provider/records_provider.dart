@@ -150,14 +150,14 @@ class RecordsProvider extends ChangeNotifier {
     final current = _box.get(recordId);
     if (current != null) {
       final updated = current.copyWith(
-        history: [historyId, ...current.history], // 👉 append ID ngay
+        history: [historyId, ...current.history], 
       );
       await _box.put(recordId, updated);
       _records = _box.values.toList(growable: false);
       _safeNotify();
     }
 
-    return historyId; // 👉 trả ra để UI biết mà refresh PostProvider
+    return historyId;
   } catch (e) {
     _error = 'Thêm lịch sử thất bại: $e';
     _safeNotify();
@@ -173,7 +173,6 @@ class RecordsProvider extends ChangeNotifier {
       _timelineByRecord[recordId] ?? const [];
   bool timelineLoading(String recordId) => _timelineLoading.contains(recordId);
 
-  // ➋ loader
   Future<void> loadTimeline(String recordId, {bool refresh = false}) async {
     if (!refresh && _timelineByRecord.containsKey(recordId)) return;
     if (_timelineLoading.contains(recordId)) return;

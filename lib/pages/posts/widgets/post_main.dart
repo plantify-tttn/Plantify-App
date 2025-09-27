@@ -26,7 +26,6 @@ class _PostMainState extends State<PostMain> {
     super.initState();
     loveCount = widget.post.likeCount;
     token = UserService.getToken();
-    // tô màu lúc load theo Hive
     isLoved = FavouriteLocal.isLoved(widget.post.id);
     commentCount = widget.post.commentCount;
   }
@@ -40,17 +39,15 @@ class _PostMainState extends State<PostMain> {
 
     if (after != null) {
       setState(() {
-        isLoved = after;                       // icon color
+        isLoved = after;                     
         if (after != before) {
-          loveCount += after ? 1 : -1;         // counter
+          loveCount += after ? 1 : -1;       
           if (loveCount < 0) loveCount = 0;
         }
         _busy = false;
       });
     } else {
-      // request failed -> không đổi trạng thái
       setState(() => _busy = false);
-      // optionally show SnackBar here
     }
   }
 
@@ -59,7 +56,6 @@ class _PostMainState extends State<PostMain> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Nội dung bài viết
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
           child: Text(
@@ -70,8 +66,6 @@ class _PostMainState extends State<PostMain> {
             ),
           ),
         ),
-
-        // Ảnh bài viết
         Container(
           width: double.infinity,
           height: 260,
@@ -83,10 +77,8 @@ class _PostMainState extends State<PostMain> {
           ),
         ),
 
-        // Các nút tương tác
         Row(
           children: [
-            // ❤️ Love
             Expanded(
           child: GestureDetector(
             onTap: _busy ? null : _toggle,
@@ -102,7 +94,6 @@ class _PostMainState extends State<PostMain> {
         ),
 
 
-            // 💬 Comment
             Expanded(
               child: GestureDetector(
                 onTap: () async {
@@ -113,7 +104,7 @@ class _PostMainState extends State<PostMain> {
                   ),
                 );
                 if (added != null && added > 0 && mounted) {
-                  setState(() => commentCount += added); // ✅ update
+                  setState(() => commentCount += added); 
                 }
                 },
                 child: statusButton(
@@ -125,8 +116,6 @@ class _PostMainState extends State<PostMain> {
             ),
           ],
         ),
-
-        // Gạch ngăn
         Container(
           height: 2,
           width: double.infinity,

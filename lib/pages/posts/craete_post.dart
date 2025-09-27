@@ -5,18 +5,17 @@ import 'package:plantify/apps/router/router_name.dart';
 import 'package:plantify/provider/user_vm.dart';
 import 'package:provider/provider.dart';
 
-class CreatePost extends StatelessWidget { // 👈 rename: CreatePost
+class CreatePost extends StatelessWidget {
   const CreatePost({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<UserVm>().user; // 👈 auto-rebuild when Hive changes
+    final user = context.watch<UserVm>().user;
 
-    // Null-safe: nếu chưa login / chưa có user
     final placeholderUrl = 'https://cdn-icons-png.flaticon.com/512/8792/8792047.png';
     final raw = user?.imageUrl ?? '';
     final avatarUrl = (raw.isNotEmpty && raw.startsWith('http'))
-        ? '$raw${raw.contains('?') ? '&' : '?'}ts=${DateTime.now().millisecondsSinceEpoch}' // cache-bust
+        ? '$raw${raw.contains('?') ? '&' : '?'}ts=${DateTime.now().millisecondsSinceEpoch}' 
         : (raw.isNotEmpty ? raw : placeholderUrl);
 
     return GestureDetector(

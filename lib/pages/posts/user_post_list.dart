@@ -14,7 +14,6 @@ class _UserPostListState extends State<UserPostList> {
    @override
   void initState() {
     super.initState();
-    // Defer to post-frame so notifyListeners won't run during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<PostProvider>().getUPosts();

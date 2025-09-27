@@ -47,17 +47,15 @@ class _SearchPageState extends State<SearchPage> {
             onRefresh: () async {
               final vm = context.read<SearchVm>();
               await Future.wait([
-                vm.getPlanItems(refetch: true),     // nếu có tham số force thì truyền vào
+                vm.getPlanItems(refetch: true),
                 vm.getDiseaseItems(refetch: true),
               ]);
-              // Nếu bạn muốn lọc lại theo text hiện tại:
               final q = searchVm.searchController.text;
               if (q.isNotEmpty) {
                 vm.search(q, context);
               }
             },
             child: SingleChildScrollView(
-              // ✅ Đảm bảo luôn kéo được để hiện RefreshIndicator
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
@@ -108,7 +106,7 @@ class _SearchPageState extends State<SearchPage> {
                     ),
                   ),
                   TrendingDisease(listItems: searchVm.allDiseaseItems),
-                  const SizedBox(height: 24), // thêm tí khoảng trống cho đẹp
+                  const SizedBox(height: 24), 
                 ],
               ),
             ),

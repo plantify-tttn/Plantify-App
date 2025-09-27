@@ -20,7 +20,7 @@ class _CommentPageState extends State<CommentPage> {
   late String token;
 
   final Map<String, UserModel?> _userCache = {};
-  int _addedCount = 0; // ✅ đếm số comment mới
+  int _addedCount = 0; 
   bool _sending = false;
 
   @override
@@ -66,9 +66,9 @@ class _CommentPageState extends State<CommentPage> {
     if (!mounted) return;
     if (ok) {
       _controller.clear();
-      FocusScope.of(context).unfocus(); // đóng bàn phím
+      FocusScope.of(context).unfocus(); 
       _addedCount++;
-      setState(_loadComments); // reload list
+      setState(_loadComments); 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Gửi bình luận thành công!')),
       );
@@ -84,7 +84,6 @@ class _CommentPageState extends State<CommentPage> {
   Widget build(BuildContext context) {
     final local = AppLocalizations.of(context)!;
     return WillPopScope(
-      // ✅ trả result khi back (swipe/back)
       onWillPop: () async {
         Navigator.pop(context, _addedCount);
         return false;
@@ -96,7 +95,6 @@ class _CommentPageState extends State<CommentPage> {
               local.comment
             ),
             leading: IconButton(
-              // ✅ back button cũng trả result
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context, _addedCount),
             ),
@@ -117,7 +115,6 @@ class _CommentPageState extends State<CommentPage> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (snapshot.hasError) {
-                      // print('❌ Lỗi FutureBuilder: ${snapshot.error}');
                       return Center(child: Text(local.errUpload));
                     }
                     final comments = snapshot.data ?? [];

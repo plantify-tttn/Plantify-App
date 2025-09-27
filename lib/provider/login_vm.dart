@@ -50,7 +50,6 @@ class LoginVm extends ChangeNotifier {
       if (token !='') {
         print('===== t');
         _email = await UserService().getEmailByToken(token);
-        //_email = (result['email'] ?? '').toString();
         print('====== s');
       } else {
         _email = (result['email'] ?? '').toString();

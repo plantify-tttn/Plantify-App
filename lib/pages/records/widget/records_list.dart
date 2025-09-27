@@ -23,7 +23,7 @@ class RecordsList extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () => context.read<RecordsProvider>().load(),
           child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 100), // 👈 chừa chỗ cho FAB
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 100),
             itemCount: records.length,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
@@ -42,7 +42,7 @@ class RecordsList extends StatelessWidget {
                         context: context,
                         builder: (_) => AlertDialog(
                           title: const Text('Xoá hồ sơ?'),
-                          content: Text('Bạn chắc chắn muốn xoá "${r.name}"?'), // 👈 name
+                          content: Text('Bạn chắc chắn muốn xoá "${r.name}"?'), 
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context, false),
@@ -57,7 +57,6 @@ class RecordsList extends StatelessWidget {
                       ) ??
                       false;
                 },
-                // onDismissed: (_) => context.read<RecordsProvider>().delete(r.id),
                 child: RecordsCard(
                   record: r,
                   dateFmt: dateFmt,
@@ -65,7 +64,6 @@ class RecordsList extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => RecordDetailPage(record: r)),
                     );
-                    // hoặc: context.pushNamed(RouterName.recordDetail, extra: r);
                   },
                 ),
               );

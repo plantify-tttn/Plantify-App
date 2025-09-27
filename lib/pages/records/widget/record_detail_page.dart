@@ -9,7 +9,6 @@ import 'package:plantify/provider/records_provider.dart';
 import 'package:plantify/provider/search_vm.dart';
 import 'package:provider/provider.dart';
 
-// dùng để lấy danh sách history & l10n (hiển thị label/ảnh)
 import 'package:plantify/provider/post_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -24,7 +23,6 @@ class RecordDetailPage extends StatefulWidget {
 class _RecordDetailPageState extends State<RecordDetailPage> {
   final _dateFmt = DateFormat('yyyy-MM-dd HH:mm');
 
-  // NGƯỠNG LỊCH SỬ TỐI THIỂU ĐỂ PHÂN TÍCH
   static const int _minHistoryForAnalysis = 2;
 
   @override
@@ -102,9 +100,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
   }
 
-  // ===== Thêm lịch sử bằng bottom-sheet (đã đánh dấu các mục đã gắn) =====
   Future<void> _onAddHistory(BuildContext context, RecordModel r) async {
-    // truyền danh sách history đã có của record để sheet đánh dấu sẵn
     final picks = await showModalBottomSheet<Set<String>>(
       context: context,
       isScrollControlled: true,
@@ -116,7 +112,7 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     try {
       await context.read<RecordsProvider>().attachHistories(
             recordId: r.id,
-            historyIds: picks.toList(), // chỉ các mục mới
+            historyIds: picks.toList(), 
           );
       if (!mounted) return;
       await context.read<RecordsProvider>().loadTimeline(r.id, refresh: true);
@@ -205,7 +201,6 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
                         return _timelineCard(context, t);
                       }
 
-                      // Footer: Thêm lịch sử + (nếu đủ) Phân tích, ngược lại hiển thị gợi ý còn thiếu
                       return Column(
                         children: [
                           _addHistoryInlineButton(context, r),
@@ -323,8 +318,6 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
         ),
       );
 
-  // ===== Buttons & Hints =====
-
   Widget _addHistoryButton(BuildContext context, RecordModel r) {
     return SafeArea(
       top: false,
@@ -401,22 +394,16 @@ class _RecordDetailPageState extends State<RecordDetailPage> {
     );
   }
 }
-
-// =============================
-// Bottom-sheet chọn lịch sử (đánh dấu mục đã gắn)
-// =============================
 class _HistoryPickerSheet extends StatefulWidget {
   const _HistoryPickerSheet({required this.alreadySelected});
-  final Set<String> alreadySelected; // các history đã gắn sẵn với record
+  final Set<String> alreadySelected;
 
   @override
   State<_HistoryPickerSheet> createState() => _HistoryPickerSheetState();
 }
 
 class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
-  // các mục NEW user chọn thêm trong lần này (không gồm alreadySelected)
   final Set<String> _selectedNew = {};
-
   @override
   void initState() {
     super.initState();
@@ -439,7 +426,7 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
     if (idx != -1) {
       return vm.allDiseaseItems[idx].localizedName(locale);
     }
-    return label; // fallback
+    return label;
   }
 
   @override
@@ -447,13 +434,12 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
     final mq = MediaQuery.of(context);
     final height = mq.size.height * 0.8;
     final locale = Localizations.localeOf(context);
-    final local = AppLocalizations.of(context)!; // nếu đã gen l10n
+    final local = AppLocalizations.of(context)!;
 
     return SizedBox(
       height: height,
       child: Consumer2<PostProvider, SearchVm>(
         builder: (context, pp, vm, _) {
-          // chỉ lấy lịch sử bệnh
           final histories = pp.history.where((h) => h.detectType != 'seed').toList();
 
           return Scaffold(
@@ -462,7 +448,6 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
               automaticallyImplyLeading: false,
               actions: [
                 TextButton(
-                  // Trả về CHỈ các mục mới để attach
                   onPressed: () => Navigator.pop(context, _selectedNew),
                   child: const Text('Xong'),
                 ),
@@ -489,7 +474,6 @@ class _HistoryPickerSheetState extends State<_HistoryPickerSheet> {
                         opacity: already ? 0.7 : 1.0,
                         child: CheckboxListTile(
                           value: checked,
-                          // nếu đã gắn rồi -> disable toggle
                           onChanged: already
                               ? null
                               : (v) {

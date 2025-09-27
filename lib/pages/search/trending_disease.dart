@@ -24,7 +24,6 @@ class TrendingDisease extends StatelessWidget {
   Widget trendingCard(BuildContext context, DiseaseModel disease) {
   final locale = Localizations.localeOf(context);
 
-  // Ảnh an toàn: ưu tiên images[1], nếu không có thì lấy first, cuối cùng là fallback
   final String imgUrl = (() {
     if (disease.images.length > 1) return disease.images[1];
     if (disease.images.isNotEmpty) return disease.images.first;
@@ -56,7 +55,6 @@ class TrendingDisease extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Ảnh nền
                 Image.network(
                   imgUrl,
                   fit: BoxFit.cover,
@@ -76,7 +74,6 @@ class TrendingDisease extends StatelessWidget {
                   ),
                 ),
 
-                // Overlay gradient làm chữ rõ
                 Positioned.fill(
                   child: DecoratedBox(
                     decoration: BoxDecoration(
@@ -93,7 +90,6 @@ class TrendingDisease extends StatelessWidget {
                   ),
                 ),
 
-                // Badge "Trending"
                 Positioned(
                   top: 12,
                   left: 12,
@@ -126,7 +122,6 @@ class TrendingDisease extends StatelessWidget {
                   ),
                 ),
 
-                // Icon thông tin (có thể gắn action sau)
                 Positioned(
                   top: 12,
                   right: 12,
@@ -144,7 +139,6 @@ class TrendingDisease extends StatelessWidget {
                   ),
                 ),
 
-                // Tên bệnh + nút View
                 Positioned(
                   left: 14,
                   right: 14,

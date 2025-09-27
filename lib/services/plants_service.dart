@@ -32,7 +32,6 @@ class PlantsService {
 
     final decoded = jsonDecode(utf8.decode(res.bodyBytes));
 
-    // API có thể trả List trực tiếp, hoặc bọc trong "diseases"/"disease"
     final List<dynamic> items = decoded is List
         ? decoded
         : (decoded['diseases'] as List?) ??
@@ -47,7 +46,6 @@ class PlantsService {
     await saveDiseaseToHive(disease);
     return disease;
   }
-  /// Lấy dữ liệu từ Hive
   List<PlantModel> getPlantsFromHive() {
     final box = Hive.box<PlantModel>('plants');
     return box.values.toList();
@@ -58,15 +56,14 @@ class PlantsService {
   }
   Future<void> clearAllPlants() async {
     final box = Hive.box<PlantModel>('plants');
-    await box.clear(); // xoá sạch box plants
+    await box.clear(); 
   }
 
   Future<void> clearAllDiseases() async {
     final box = Hive.box<DiseaseModel>('diseases');
-    await box.clear(); // xoá sạch box diseases
+    await box.clear(); 
   }
 
-  /// Lưu danh sách vào Hive
   Future<void> savePlantsToHive(List<PlantModel> plants) async {
     final box = Hive.box<PlantModel>('plants');
     await box.clear();
@@ -82,14 +79,12 @@ class PlantsService {
     }
   }
 
-  /// So sánh dữ liệu mới và cũ (đơn giản bằng json)
   bool isDifferent(List<PlantModel> oldList, List<PlantModel> newList) {
     final oldJson = jsonEncode(oldList.map((e) => e.toJson()).toList());
     final newJson = jsonEncode(newList.map((e) => e.toJson()).toList());
     return oldJson != newJson;
   }
 
-  /// Gọi API, so sánh, cập nhật Hive nếu khác
   Future<List<PlantModel>> fetchAndUpdatePlants({
     VoidCallback? onDataChanged,
   }) async {
@@ -114,6 +109,6 @@ class PlantsService {
   }
   PlantModel? getPlantById(String id) {
     final box = Hive.box<PlantModel>('plants');
-    return box.get(id); // Trả về null nếu không có
+    return box.get(id);
   }
 }

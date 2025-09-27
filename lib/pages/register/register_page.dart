@@ -28,8 +28,8 @@ class RegisterPage extends StatelessWidget {
           statusBarIconBrightness: Brightness.dark,
         ),
         child: Scaffold(
-          backgroundColor: Colors.transparent, // 👈 Không che gradient
-          extendBody: true, // 👈 Cho gradient tràn xuống dưới
+          backgroundColor: Colors.transparent, 
+          extendBody: true, 
           resizeToAvoidBottomInset: false,
           extendBodyBehindAppBar: true,
           appBar: AppBar(
@@ -63,7 +63,7 @@ class RegisterPage extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(height: 100), // Khoảng cách từ trên xuống
+                      const SizedBox(height: 100),
                       Text(
                         AppLocalizations.of(context)!.register,
                         style: TextStyle(
@@ -158,7 +158,6 @@ class RegisterPage extends StatelessWidget {
                           if (!context.mounted) return;
 
                           if (registerVm.isRegister) {
-                            // SnackBar báo trước (optional nhưng recommend)
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(local.registerSuccess),
@@ -167,7 +166,6 @@ class RegisterPage extends StatelessWidget {
                               ),
                             );
 
-                            // Confirm dialog “đẹp”
                             final confirm = await showPrettyConfirm(
                               context,
                               title: local.registerSuccess + " 🎉",
@@ -234,7 +232,7 @@ Future<bool?> showPrettyConfirm(
   return showDialog<bool>(
     context: context,
     barrierDismissible: true,
-    barrierColor: Colors.black.withOpacity(0.35), // dim background
+    barrierColor: Colors.black.withOpacity(0.35), 
     builder: (ctx) {
       return Center(
         child: TweenAnimationBuilder<double>(
@@ -274,7 +272,6 @@ Future<bool?> showPrettyConfirm(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Icon badge
                       Container(
                         height: 56,
                         width: 56,
@@ -291,8 +288,6 @@ Future<bool?> showPrettyConfirm(
                             color: Colors.white, size: 32),
                       ),
                       const SizedBox(height: 14),
-
-                      // Title
                       Text(
                         title,
                         textAlign: TextAlign.center,
@@ -301,8 +296,6 @@ Future<bool?> showPrettyConfirm(
                         ),
                       ),
                       const SizedBox(height: 8),
-
-                      // Message
                       Text(
                         message,
                         textAlign: TextAlign.center,
@@ -311,11 +304,8 @@ Future<bool?> showPrettyConfirm(
                         ),
                       ),
                       const SizedBox(height: 18),
-
-                      // Buttons row
                       Row(
                         children: [
-                          // Cancel - ghost button
                           Expanded(
                             child: OutlinedButton(
                               onPressed: () {
@@ -340,7 +330,6 @@ Future<bool?> showPrettyConfirm(
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // Confirm - gradient pill
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
